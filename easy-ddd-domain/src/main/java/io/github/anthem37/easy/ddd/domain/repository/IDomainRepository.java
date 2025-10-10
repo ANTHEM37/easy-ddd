@@ -14,7 +14,7 @@ import java.util.Optional;
  * @author anthem37
  * @date 2025/8/14 14:05:38
  */
-public interface IRepository<T extends AbstractAggregateRoot<ID>, ID> {
+public interface IDomainRepository<T extends AbstractAggregateRoot<ID>, ID> {
 
     /**
      * 根据ID查找聚合
@@ -35,5 +35,5 @@ public interface IRepository<T extends AbstractAggregateRoot<ID>, ID> {
      * 删除聚合
      */
     void remove(T aggregate);
-    
+
 }

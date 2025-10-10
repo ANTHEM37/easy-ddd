@@ -13,6 +13,7 @@
         <module>easy-ddd-common</module>
         <module>easy-ddd-domain</module>
         <module>easy-ddd-application</module>
+        <module>easy-ddd-infrastructure</module>
     </modules>
 
     <properties>
