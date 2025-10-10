@@ -13,7 +13,7 @@ import java.util.Optional;
 
 /**
  * 仓储基础实现类
- * 提供通用的CRUD操作实现，支持规约模式和事件发布
+ * 提供通用的CRUD操作实现，支持事件发布
  *
  * @param <T>  聚合根类型
  * @param <ID> 聚合根标识类型
