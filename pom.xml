@@ -11,6 +11,7 @@
     <modules>
         <module>easy-ddd-bom</module>
         <module>easy-ddd-common</module>
+        <module>easy-ddd-domain</module>
     </modules>
 
     <properties>
@@ -65,6 +66,18 @@
                 <artifactId>mapstruct-processor</artifactId>
                 <version>${mapstruct-parent.version}</version>
                 <scope>provided</scope>
+            </dependency>
+
+            <!-- DDD Framework Modules -->
+            <dependency>
+                <groupId>io.github.anthem37</groupId>
+                <artifactId>easy-ddd-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.anthem37</groupId>
+                <artifactId>easy-ddd-domain</artifactId>
+                <version>${project.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
