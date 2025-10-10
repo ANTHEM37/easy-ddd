@@ -1,5 +1,6 @@
 package io.github.anthem37.easy.ddd.domain.event;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -12,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DomainEventPublisher {
 
+    @Getter
     private static EventPublisher eventPublisher;
 
     /**

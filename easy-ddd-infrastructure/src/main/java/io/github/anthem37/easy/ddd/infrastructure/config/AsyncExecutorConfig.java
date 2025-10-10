@@ -24,7 +24,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Slf4j
 @Configuration
 @EnableAsync
-@ConfigurationProperties(prefix = "ddd.async")
+@ConfigurationProperties(prefix = "easy.ddd.async")
 @Data
 public class AsyncExecutorConfig {
 

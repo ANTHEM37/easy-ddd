@@ -8,6 +8,8 @@ import io.github.anthem37.easy.ddd.infrastructure.bus.impl.QueryBus;
 import io.github.anthem37.easy.ddd.infrastructure.event.SpringDomainEventPublisher;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
@@ -32,7 +34,7 @@ import java.util.concurrent.Executor;
 @EnableAspectJAutoProxy
 @EnableTransactionManagement
 @ComponentScan(basePackages = {"io.github.anthem37.easy.ddd"})
-public class DDDFrameworkAutoConfiguration {
+public class EasyDDDAutoConfiguration implements ApplicationRunner {
 
     /**
      * 命令总线
@@ -59,5 +61,13 @@ public class DDDFrameworkAutoConfiguration {
     @ConditionalOnMissingBean(DomainEventPublisher.EventPublisher.class)
     public DomainEventPublisher.EventPublisher domainEventPublisher(ApplicationEventPublisher applicationEventPublisher, @Qualifier("eventExecutor") Executor eventExecutor) {
         return new SpringDomainEventPublisher(applicationEventPublisher, eventExecutor);
+    }
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        DomainEventPublisher.EventPublisher eventPublisher = DomainEventPublisher.getEventPublisher();
+        if (eventPublisher == null) {
+            log.warn("DomainEventPublisher.EventPublisher未设置, 领域事件将不会被发布");
+        }
     }
 }
