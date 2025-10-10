@@ -12,6 +12,7 @@
         <module>easy-ddd-bom</module>
         <module>easy-ddd-common</module>
         <module>easy-ddd-domain</module>
+        <module>easy-ddd-application</module>
     </modules>
 
     <properties>
@@ -77,6 +78,11 @@
             <dependency>
                 <groupId>io.github.anthem37</groupId>
                 <artifactId>easy-ddd-domain</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.anthem37</groupId>
+                <artifactId>easy-ddd-application</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>
