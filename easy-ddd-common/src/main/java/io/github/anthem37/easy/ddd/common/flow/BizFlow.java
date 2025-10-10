@@ -1,4 +1,4 @@
-package io.github.anthem37.easy.ddd.common.orchestration;
+package io.github.anthem37.easy.ddd.common.flow;
 
 import io.github.anthem37.easy.ddd.common.assertion.Assert;
 import io.github.anthem37.easy.ddd.common.cqrs.command.ICommand;
@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
  * @date 2025/8/15 15:01:27
  */
 @RequiredArgsConstructor
-public class Orchestration {
+public class BizFlow {
 
     @Getter
     private final String id;
@@ -55,7 +55,7 @@ public class Orchestration {
      * @param command  要执行的命令对象
      * @return 当前编排实例，支持链式调用
      */
-    public Orchestration addCommand(String nodeId, String nodeName, ICommand<?> command) {
+    public BizFlow addCommand(String nodeId, String nodeName, ICommand<?> command) {
         validateNode(nodeId, nodeName);
         Assert.orchestrationNotNull(command, "命令不能为空");
 
@@ -73,7 +73,7 @@ public class Orchestration {
      * @param commandBuilder 根据上下文动态构建命令的函数
      * @return 当前编排实例，支持链式调用
      */
-    public Orchestration addCommand(String nodeId, String nodeName, Function<Context, ICommand<?>> commandBuilder) {
+    public BizFlow addCommand(String nodeId, String nodeName, Function<Context, ICommand<?>> commandBuilder) {
         validateNode(nodeId, nodeName);
         Assert.orchestrationNotNull(commandBuilder, "命令构建函数不能为空");
 
@@ -95,7 +95,7 @@ public class Orchestration {
      * @param query    要执行的查询对象
      * @return 当前编排实例，支持链式调用
      */
-    public Orchestration addQuery(String nodeId, String nodeName, IQuery<?> query) {
+    public BizFlow addQuery(String nodeId, String nodeName, IQuery<?> query) {
         validateNode(nodeId, nodeName);
         Assert.orchestrationNotNull(query, "查询不能为空");
 
@@ -113,7 +113,7 @@ public class Orchestration {
      * @param queryBuilder 根据上下文动态构建查询的函数
      * @return 当前编排实例，支持链式调用
      */
-    public Orchestration addQuery(String nodeId, String nodeName, Function<Context, IQuery<?>> queryBuilder) {
+    public BizFlow addQuery(String nodeId, String nodeName, Function<Context, IQuery<?>> queryBuilder) {
         validateNode(nodeId, nodeName);
         Assert.orchestrationNotNull(queryBuilder, "查询构建函数不能为空");
 
@@ -135,7 +135,7 @@ public class Orchestration {
      * @param condition 条件判断函数，返回 Boolean 值
      * @return 当前编排实例，支持链式调用
      */
-    public Orchestration addCondition(String nodeId, String nodeName, Function<Context, Boolean> condition) {
+    public BizFlow addCondition(String nodeId, String nodeName, Function<Context, Boolean> condition) {
         validateNode(nodeId, nodeName);
         Assert.orchestrationNotNull(condition, "条件函数不能为空");
 
@@ -154,7 +154,7 @@ public class Orchestration {
      * @param expectedValue 期望的变量值
      * @return 当前编排实例，支持链式调用
      */
-    public Orchestration addCondition(String nodeId, String nodeName, String variableName, Object expectedValue) {
+    public BizFlow addCondition(String nodeId, String nodeName, String variableName, Object expectedValue) {
         validateNode(nodeId, nodeName);
         Assert.orchestrationHasText(variableName, "变量名不能为空");
 
@@ -176,7 +176,7 @@ public class Orchestration {
      * @param expectedResult 期望的结果值
      * @return 当前编排实例，支持链式调用
      */
-    public Orchestration addResultCondition(String nodeId, String nodeName, String sourceNodeId, Object expectedResult) {
+    public BizFlow addResultCondition(String nodeId, String nodeName, String sourceNodeId, Object expectedResult) {
         validateNode(nodeId, nodeName);
         Assert.orchestrationHasText(sourceNodeId, "源节点ID不能为空");
 
@@ -197,7 +197,7 @@ public class Orchestration {
      * @param executor 自定义执行逻辑
      * @return 当前编排实例，支持链式调用
      */
-    public Orchestration addGeneric(String nodeId, String nodeName, Function<Context, Object> executor) {
+    public BizFlow addGeneric(String nodeId, String nodeName, Function<Context, Object> executor) {
         validateNode(nodeId, nodeName);
         Assert.orchestrationNotNull(executor, "执行函数不能为空");
 
@@ -212,7 +212,7 @@ public class Orchestration {
      * @param to   目标节点ID
      * @return 当前编排实例，支持链式调用
      */
-    public Orchestration connect(String from, String to) {
+    public BizFlow connect(String from, String to) {
         validateConnect(from, to);
         connections.add(new Connection(from, to, null, null));
         return this;
@@ -227,7 +227,7 @@ public class Orchestration {
      * @param conditionCheck 条件检查函数
      * @return 当前编排实例，支持链式调用
      */
-    public Orchestration connectWhen(String from, String to, String conditionName, Function<Context, Boolean> conditionCheck) {
+    public BizFlow connectWhen(String from, String to, String conditionName, Function<Context, Boolean> conditionCheck) {
         validateConnect(from, to);
         Assert.orchestrationHasText(conditionName, "条件名称不能为空");
         Assert.orchestrationNotNull(conditionCheck, "条件检查函数不能为空");
@@ -243,7 +243,7 @@ public class Orchestration {
      * @param to   目标节点ID
      * @return 当前编排实例，支持链式调用
      */
-    public Orchestration connectWhenTrue(String from, String to) {
+    public BizFlow connectWhenTrue(String from, String to) {
         validateConnect(from, to);
         // 创建条件：检查源节点结果是否为 true
         Function<Context, Boolean> condition = ctx -> {
@@ -265,7 +265,7 @@ public class Orchestration {
      * @param to   目标节点ID
      * @return 当前编排实例，支持链式调用
      */
-    public Orchestration connectWhenFalse(String from, String to) {
+    public BizFlow connectWhenFalse(String from, String to) {
         validateConnect(from, to);
         // 创建条件：检查源节点结果是否不为 true
         Function<Context, Boolean> condition = ctx -> {
