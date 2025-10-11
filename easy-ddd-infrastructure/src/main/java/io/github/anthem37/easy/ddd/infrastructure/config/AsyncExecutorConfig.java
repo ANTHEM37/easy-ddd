@@ -96,7 +96,7 @@ public class AsyncExecutorConfig {
             event.setAwaitTerminationSeconds(60); // 默认等待时间
         }
         if (event.getRejectedExecutionPolicy() == null) {
-            event.setRejectedExecutionPolicy("DISCARD_OLDEST"); // 默认拒绝策略
+            event.setRejectedExecutionPolicy("CALLER_RUNS"); // 默认拒绝策略
         }
 
         return createExecutor(event, "Event");
