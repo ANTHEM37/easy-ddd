@@ -46,7 +46,7 @@ public abstract class AbstractDomainRepository<T extends AbstractAggregateRoot<I
         Assert.notNull(aggregate, "聚合不能为空");
         //更新
         log.debug("更新聚合: {}", aggregate.getId());
-        doUpdate(aggregate);
+        doUpdateById(aggregate);
         // 发布领域事件
         publishDomainEvents(aggregate);
     }
@@ -57,7 +57,7 @@ public abstract class AbstractDomainRepository<T extends AbstractAggregateRoot<I
         Assert.notNull(aggregate, "聚合不能为空");
         //删除
         log.debug("删除聚合: {}", aggregate.getId());
-        doDeleteById(aggregate.getId());
+        doDeleteById(aggregate);
         // 发布领域事件
         publishDomainEvents(aggregate);
     }
@@ -67,9 +67,9 @@ public abstract class AbstractDomainRepository<T extends AbstractAggregateRoot<I
 
     protected abstract void doInsert(T aggregate);
 
-    protected abstract void doUpdate(T aggregate);
+    protected abstract void doUpdateById(T aggregate);
 
-    protected abstract void doDeleteById(ID id);
+    protected abstract void doDeleteById(T aggregate);
 
     /**
      * 发布领域事件
