@@ -77,7 +77,7 @@ public interface IDomainEvent {
      */
     default TriggeredPhase getTriggeredPhase() {
 
-        return TriggeredPhase.IN_PROCESS;
+        return TriggeredPhase.AFTER_COMMIT;
     }
 
     /**
