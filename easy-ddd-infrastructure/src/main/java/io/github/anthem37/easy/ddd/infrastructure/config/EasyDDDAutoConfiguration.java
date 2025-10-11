@@ -60,7 +60,10 @@ public class EasyDDDAutoConfiguration implements ApplicationRunner {
     @Bean
     @ConditionalOnMissingBean(DomainEventPublisher.EventPublisher.class)
     public DomainEventPublisher.EventPublisher domainEventPublisher(ApplicationEventPublisher applicationEventPublisher, @Qualifier("eventExecutor") Executor eventExecutor) {
-        return new SpringDomainEventPublisher(applicationEventPublisher, eventExecutor);
+        DomainEventPublisher.EventPublisher publisher = new SpringDomainEventPublisher(applicationEventPublisher, eventExecutor);
+        // 注册到领域层静态发布器，以保持框架默认行为
+        DomainEventPublisher.setEventPublisher(publisher);
+        return publisher;
     }
 
     @Override

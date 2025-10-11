@@ -39,6 +39,27 @@ public class DomainEventPublisher {
     }
 
     /**
+     * 按指定阶段发布
+     */
+    public static void publishWithPhase(IDomainEvent event, IDomainEvent.TriggeredPhase phase) {
+        publish(new TriggeredPhaseEvent(event, phase));
+    }
+
+    /**
+     * 便捷方法：发布为事务提交后阶段
+     */
+    public static void publishAfterCommit(IDomainEvent event) {
+        publishWithPhase(event, IDomainEvent.TriggeredPhase.AFTER_COMMIT);
+    }
+
+    /**
+     * 便捷方法：发布为事务回滚后阶段
+     */
+    public static void publishAfterRollback(IDomainEvent event) {
+        publishWithPhase(event, IDomainEvent.TriggeredPhase.AFTER_ROLLBACK);
+    }
+
+    /**
      * 事件发布器接口（实现类需要把自己注册到DomainEventPublisher）
      * 由基础设施层实现
      */

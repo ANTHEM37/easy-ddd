@@ -24,8 +24,6 @@ public class SpringDomainEventPublisher implements DomainEventPublisher.EventPub
     public SpringDomainEventPublisher(ApplicationEventPublisher applicationEventPublisher, Executor eventExecutor) {
         this.applicationEventPublisher = applicationEventPublisher;
         this.eventExecutor = eventExecutor;
-        // 将自己注册为领域层的事件发布器实现
-        DomainEventPublisher.setEventPublisher(this);
     }
 
     @Override
