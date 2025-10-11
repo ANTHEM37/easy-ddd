@@ -27,6 +27,9 @@ public abstract class AbstractEventHandler<T extends IDomainEvent> implements IE
     @EventListener
     @Override
     public void handle(T event) {
+        if (event.getTriggeredPhase() != IDomainEvent.TriggeredPhase.IN_PROCESS) {
+            return;
+        }
         processEvent(event, "处理领域事件", this::doHandle, this::handleError);
     }
 
@@ -35,6 +38,9 @@ public abstract class AbstractEventHandler<T extends IDomainEvent> implements IE
      */
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleAfterCommit(T event) {
+        if (event.getTriggeredPhase() != IDomainEvent.TriggeredPhase.AFTER_COMMIT) {
+            return;
+        }
         processEvent(event, "事务提交后处理领域事件", this::doHandleAfterCommit, this::handleAfterCommitError);
     }
 
@@ -43,6 +49,10 @@ public abstract class AbstractEventHandler<T extends IDomainEvent> implements IE
      */
     @TransactionalEventListener(phase = TransactionPhase.AFTER_ROLLBACK)
     public void handleAfterRollback(T event) {
+        if (event.getTriggeredPhase() != IDomainEvent.TriggeredPhase.IN_PROCESS
+                && event.getTriggeredPhase() != IDomainEvent.TriggeredPhase.AFTER_ROLLBACK) {
+            return;
+        }
         processEvent(event, "事务回滚后处理领域事件", this::doHandleAfterRollback, this::handleAfterRollbackError);
     }
 
@@ -108,15 +118,6 @@ public abstract class AbstractEventHandler<T extends IDomainEvent> implements IE
     protected void handleError(T event, Exception e) {
         // 使用断言方式处理异常
         Assert.fail("事件处理失败: " + event.getEventType() + " - " + e.getMessage());
-    }
-
-    /**
-     * 处理异步事件处理异常
-     * 子类可以重写此方法自定义异常处理
-     */
-    protected void handleAsyncError(T event, Exception e) {
-        // 异步处理异常默认只记录日志，不抛出异常
-        log.error("异步事件处理异常，事件类型: {}", event.getEventType());
     }
 
     /**

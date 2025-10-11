@@ -2,7 +2,7 @@ package io.github.anthem37.easy.ddd.common.assertion;
 
 
 import io.github.anthem37.easy.ddd.common.exception.BusinessException;
-import io.github.anthem37.easy.ddd.common.exception.OrchestrationException;
+import io.github.anthem37.easy.ddd.common.exception.BizFlowException;
 
 import java.util.Collection;
 import java.util.function.Supplier;
@@ -148,7 +148,7 @@ public final class Assert {
      */
     public static void orchestrationHasText(String text, String message) {
         if (text == null || text.trim().isEmpty()) {
-            throw new OrchestrationException(message);
+            throw new BizFlowException(message);
         }
     }
 
@@ -157,7 +157,7 @@ public final class Assert {
      */
     public static void orchestrationNotNull(Object object, String message) {
         if (object == null) {
-            throw new OrchestrationException(message);
+            throw new BizFlowException(message);
         }
     }
 
@@ -166,7 +166,7 @@ public final class Assert {
      */
     public static void orchestrationIsTrue(boolean expression, String message) {
         if (!expression) {
-            throw new OrchestrationException(message);
+            throw new BizFlowException(message);
         }
     }
 
@@ -175,7 +175,7 @@ public final class Assert {
      */
     public static void orchestrationIsFalse(boolean expression, String message) {
         if (expression) {
-            throw new OrchestrationException(message);
+            throw new BizFlowException(message);
         }
     }
 
@@ -183,7 +183,7 @@ public final class Assert {
      * 编排断言：直接失败
      */
     public static void orchestrationFail(String message) {
-        throw new OrchestrationException(message);
+        throw new BizFlowException(message);
     }
 
     // ========== 通用断言增强方法 ==========

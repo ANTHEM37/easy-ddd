@@ -71,4 +71,22 @@ public interface IDomainEvent {
     default boolean isAsync() {
         return false;
     }
+
+    /**
+     * 触发阶段参考：org.springframework.transaction.event.TransactionPhase
+     */
+    default TriggeredPhase getTriggeredPhase() {
+
+        return TriggeredPhase.IN_PROCESS;
+    }
+
+    /**
+     * 触发阶段枚举
+     */
+    enum TriggeredPhase {
+        IN_PROCESS,
+        AFTER_COMMIT,
+        AFTER_ROLLBACK,
+    }
+
 }

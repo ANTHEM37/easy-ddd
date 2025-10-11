@@ -5,7 +5,7 @@ import io.github.anthem37.easy.ddd.common.cqrs.command.ICommand;
 import io.github.anthem37.easy.ddd.common.cqrs.command.ICommandBus;
 import io.github.anthem37.easy.ddd.common.cqrs.query.IQuery;
 import io.github.anthem37.easy.ddd.common.cqrs.query.IQueryBus;
-import io.github.anthem37.easy.ddd.common.exception.OrchestrationException;
+import io.github.anthem37.easy.ddd.common.exception.BizFlowException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -466,7 +466,7 @@ public class BizFlow {
          * @param type   期望的结果类型
          * @param <T>    泛型类型
          * @return 执行结果，如果不存在则返回 null
-         * @throws OrchestrationException 当类型不匹配时
+         * @throws BizFlowException 当类型不匹配时
          */
         public <T> T getResult(String nodeId, Class<T> type) {
             Object result = results.get(nodeId);

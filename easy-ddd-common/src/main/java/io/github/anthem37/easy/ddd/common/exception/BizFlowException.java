@@ -9,7 +9,7 @@ import java.io.Serial;
  * @author CodeBuddy
  * @date 2025/8/15
  */
-public class OrchestrationException extends BusinessException {
+public class BizFlowException extends BusinessException {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -19,7 +19,7 @@ public class OrchestrationException extends BusinessException {
      *
      * @param message 异常消息
      */
-    public OrchestrationException(String message) {
+    public BizFlowException(String message) {
         super("ORCHESTRATION_ERROR", message);
     }
 
@@ -29,7 +29,7 @@ public class OrchestrationException extends BusinessException {
      * @param message 异常消息
      * @param cause   原因异常
      */
-    public OrchestrationException(String message, Throwable cause) {
+    public BizFlowException(String message, Throwable cause) {
         super("ORCHESTRATION_ERROR", message, cause);
     }
 
@@ -39,7 +39,7 @@ public class OrchestrationException extends BusinessException {
      * @param errorCode 错误码
      * @param message   异常消息
      */
-    public OrchestrationException(String errorCode, String message) {
+    public BizFlowException(String errorCode, String message) {
         super(errorCode, message);
     }
 }
