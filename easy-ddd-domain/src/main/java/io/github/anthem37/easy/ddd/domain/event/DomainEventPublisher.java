@@ -39,6 +39,26 @@ public class DomainEventPublisher {
     }
 
     /**
+     * 使用指定发布器发布事件（不改变全局发布器），便于接入 MQ 实现
+     */
+    public static void publishWith(IDomainEvent event, EventPublisher publisher) {
+        if (event == null || publisher == null) {
+            return;
+        }
+        publisher.publish(event);
+    }
+
+    /**
+     * 使用指定发布器按阶段发布事件（不改变全局发布器）
+     */
+    public static void publishWithPhase(IDomainEvent event, IDomainEvent.TriggeredPhase phase, EventPublisher publisher) {
+        if (event == null || publisher == null) {
+            return;
+        }
+        publisher.publish(new TriggeredPhaseEvent(event, phase));
+    }
+
+    /**
      * 按指定阶段发布
      */
     public static void publishWithPhase(IDomainEvent event, IDomainEvent.TriggeredPhase phase) {
@@ -63,6 +83,7 @@ public class DomainEventPublisher {
      * 事件发布器接口（实现类需要把自己注册到DomainEventPublisher）
      * 由基础设施层实现
      */
+    @FunctionalInterface
     public interface EventPublisher {
 
         /**
