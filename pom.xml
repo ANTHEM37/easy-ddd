@@ -6,7 +6,7 @@
 
     <groupId>io.github.anthem37</groupId>
     <artifactId>easy-ddd</artifactId>
-    <version>1.0.0-RELEASE</version>
+    <version>1.0.1-RELEASE</version>
     <packaging>pom</packaging>
     <name>easy-ddd</name>
     <description>DDD for Java: common primitives, domain model, application contracts, and Spring-based
