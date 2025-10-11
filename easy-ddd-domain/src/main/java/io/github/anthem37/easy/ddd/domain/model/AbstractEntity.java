@@ -1,9 +1,10 @@
 package io.github.anthem37.easy.ddd.domain.model;
 
-import io.github.anthem37.easy.ddd.common.assertion.Assert;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import lombok.experimental.Accessors;
 
 /**
  * 实体基类
@@ -13,17 +14,13 @@ import lombok.ToString;
  * @author anthem37
  * @since 2025/8/13 17:35:42
  */
-@Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Data
 @ToString
+@Accessors(chain = true)
 public abstract class AbstractEntity<ID> {
 
     @EqualsAndHashCode.Include
-    protected final ID id;
-
-    protected AbstractEntity(ID id) {
-        Assert.notNull(id, "实体ID不能为空");
-        this.id = id;
-    }
+    protected ID id;
 
 }

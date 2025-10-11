@@ -1,7 +1,9 @@
 package io.github.anthem37.easy.ddd.domain.model;
 
 import io.github.anthem37.easy.ddd.domain.event.IDomainEvent;
-import lombok.Getter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,23 +17,12 @@ import java.util.List;
  * @author anthem37
  * @since 2025/8/14 09:27:38
  */
+@EqualsAndHashCode(callSuper = true)
+@Data
+@Accessors(chain = true)
 public abstract class AbstractAggregateRoot<ID> extends AbstractEntity<ID> {
 
     private final List<IDomainEvent> domainEvents = new ArrayList<>();
-
-    @Getter
-    private int version = 0;
-
-    protected AbstractAggregateRoot(ID id) {
-        super(id);
-    }
-
-    /**
-     * 增加版本号（用于并发控制）
-     */
-    public void incrementVersion() {
-        this.version++;
-    }
 
     /**
      * 添加领域事件
