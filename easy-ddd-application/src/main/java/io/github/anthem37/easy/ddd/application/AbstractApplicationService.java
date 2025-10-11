@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
  * 应用服务抽象基类
  *
  * @author hb28301
- * @date 2025/10/11 20:28:45
+ * @since 2025/10/11 20:28:45
  */
 @Getter
 @RequiredArgsConstructor
