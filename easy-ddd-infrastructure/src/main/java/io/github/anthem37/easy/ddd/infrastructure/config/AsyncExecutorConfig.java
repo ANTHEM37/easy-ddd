@@ -52,22 +52,28 @@ public class AsyncExecutorConfig {
     public Executor queryExecutor() {
         // 默认配置：CPU密集型
         if (query.getCorePoolSizeMultiplier() <= 0) {
-            query.setCorePoolSizeMultiplier(1.0); // 默认为CPU核心数
+            // 默认为CPU核心数
+            query.setCorePoolSizeMultiplier(1.0);
         }
         if (query.getMaxPoolSizeMultiplier() <= 0) {
-            query.setMaxPoolSizeMultiplier(1.5); // 默认为CPU核心数 * 1.5
+            // 默认为CPU核心数 * 1.5
+            query.setMaxPoolSizeMultiplier(1.5);
         }
         if (query.getQueueCapacity() <= 0) {
-            query.setQueueCapacity(50); // 默认队列容量
+            // 默认队列容量
+            query.setQueueCapacity(50);
         }
         if (query.getKeepAliveSeconds() <= 0) {
-            query.setKeepAliveSeconds(60); // 默认空闲时间
+            // 默认空闲时间
+            query.setKeepAliveSeconds(60);
         }
         if (query.getAwaitTerminationSeconds() <= 0) {
-            query.setAwaitTerminationSeconds(30); // 默认等待时间
+            // 默认等待时间
+            query.setAwaitTerminationSeconds(30);
         }
         if (query.getRejectedExecutionPolicy() == null) {
-            query.setRejectedExecutionPolicy("CALLER_RUNS"); // 默认拒绝策略
+            // 默认拒绝策略
+            query.setRejectedExecutionPolicy(ExecutorProperties.RejectedExecutionPolicy.CALLER_RUNS);
         }
 
         return createExecutor(query, "Query");
@@ -81,22 +87,28 @@ public class AsyncExecutorConfig {
     public Executor eventExecutor() {
         // 默认配置：IO密集型
         if (event.getCorePoolSizeMultiplier() <= 0) {
-            event.setCorePoolSizeMultiplier(1.0); // 默认为CPU核心数
+            // 默认为CPU核心数
+            event.setCorePoolSizeMultiplier(1.0);
         }
         if (event.getMaxPoolSizeMultiplier() <= 0) {
-            event.setMaxPoolSizeMultiplier(2.0); // 默认为CPU核心数 * 2
+            // 默认为CPU核心数 * 2
+            event.setMaxPoolSizeMultiplier(2.0);
         }
         if (event.getQueueCapacity() <= 0) {
-            event.setQueueCapacity(500); // 默认队列容量
+            // 默认队列容量
+            event.setQueueCapacity(500);
         }
         if (event.getKeepAliveSeconds() <= 0) {
-            event.setKeepAliveSeconds(300); // 默认空闲时间
+            // 默认空闲时间
+            event.setKeepAliveSeconds(300);
         }
         if (event.getAwaitTerminationSeconds() <= 0) {
-            event.setAwaitTerminationSeconds(60); // 默认等待时间
+            // 默认等待时间
+            event.setAwaitTerminationSeconds(60);
         }
         if (event.getRejectedExecutionPolicy() == null) {
-            event.setRejectedExecutionPolicy("CALLER_RUNS"); // 默认拒绝策略
+            // 默认拒绝策略
+            event.setRejectedExecutionPolicy(ExecutorProperties.RejectedExecutionPolicy.CALLER_RUNS);
         }
 
         return createExecutor(event, "Event");
@@ -110,25 +122,31 @@ public class AsyncExecutorConfig {
     public Executor commandExecutor() {
         // 默认配置：平衡型
         if (command.getCorePoolSizeMultiplier() <= 0) {
-            command.setCorePoolSizeMultiplier(1.0); // 默认为CPU核心数
+            // 默认为CPU核心数
+            command.setCorePoolSizeMultiplier(1.0);
         }
         if (command.getMaxPoolSizeMultiplier() <= 0) {
-            command.setMaxPoolSizeMultiplier(1.5); // 默认为CPU核心数 * 1.5
+            // 默认为CPU核心数 * 1.5
+            command.setMaxPoolSizeMultiplier(1.5);
         }
         if (command.getQueueCapacity() <= 0) {
-            command.setQueueCapacity(200); // 默认队列容量
+            // 默认队列容量
+            command.setQueueCapacity(200);
         }
         if (command.getKeepAliveSeconds() <= 0) {
-            command.setKeepAliveSeconds(120); // 默认空闲时间
+            // 默认空闲时间
+            command.setKeepAliveSeconds(120);
         }
         if (command.getAwaitTerminationSeconds() <= 0) {
-            command.setAwaitTerminationSeconds(45); // 默认等待时间
+            // 默认等待时间
+            command.setAwaitTerminationSeconds(45);
         }
         if (command.getRejectedExecutionPolicy() == null) {
-            command.setRejectedExecutionPolicy("CALLER_RUNS"); // 默认拒绝策略
+            // 默认拒绝策略
+            command.setRejectedExecutionPolicy(ExecutorProperties.RejectedExecutionPolicy.CALLER_RUNS);
         }
 
-        return createExecutor(command, "command");
+        return createExecutor(command, "Command");
     }
 
     /**
@@ -175,15 +193,16 @@ public class AsyncExecutorConfig {
      * @param policy 策略名称
      * @return 拒绝策略处理器
      */
-    private RejectedExecutionHandler getRejectedExecutionHandler(String policy) {
-        switch (policy.toUpperCase()) {
-            case "CALLER_RUNS":
+    private RejectedExecutionHandler getRejectedExecutionHandler(ExecutorProperties.RejectedExecutionPolicy policy) {
+        switch (policy) {
+            case CALLER_RUNS:
                 return new ThreadPoolExecutor.CallerRunsPolicy();
-            case "DISCARD_OLDEST":
+            case DISCARD_OLDEST:
                 return new ThreadPoolExecutor.DiscardOldestPolicy();
-            case "DISCARD":
+            case DISCARD:
                 return new ThreadPoolExecutor.DiscardPolicy();
-            case "ABORT":
+            case ABORT:
+                return new ThreadPoolExecutor.AbortPolicy();
             default:
                 return new ThreadPoolExecutor.AbortPolicy();
         }
@@ -217,7 +236,7 @@ public class AsyncExecutorConfig {
         /**
          * 拒绝策略（CALLER_RUNS, DISCARD_OLDEST, DISCARD, ABORT）
          */
-        private String rejectedExecutionPolicy;
+        private RejectedExecutionPolicy rejectedExecutionPolicy;
 
         /**
          * 是否等待任务完成后关闭
@@ -228,6 +247,28 @@ public class AsyncExecutorConfig {
          * 等待时间（秒）
          */
         private int awaitTerminationSeconds;
+
+        /**
+         * 拒绝策略枚举
+         */
+        public enum RejectedExecutionPolicy {
+            /**
+             * 调用者运行策略
+             */
+            CALLER_RUNS,
+            /**
+             * 丢弃最旧任务策略
+             */
+            DISCARD_OLDEST,
+            /**
+             * 丢弃任务策略
+             */
+            DISCARD,
+            /**
+             * 拒绝策略：抛出异常策略
+             */
+            ABORT
+        }
     }
 
     /**
@@ -248,6 +289,7 @@ public class AsyncExecutorConfig {
         /**
          * 获取活跃线程数
          */
+        @Override
         public int getActiveCount() {
             return super.getActiveCount();
         }
@@ -255,6 +297,7 @@ public class AsyncExecutorConfig {
         /**
          * 获取线程池大小
          */
+        @Override
         public int getPoolSize() {
             return super.getPoolSize();
         }
@@ -262,6 +305,7 @@ public class AsyncExecutorConfig {
         /**
          * 获取队列大小
          */
+        @Override
         public int getQueueSize() {
             return super.getThreadPoolExecutor().getQueue().size();
         }
