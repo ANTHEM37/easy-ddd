@@ -10,6 +10,8 @@
     </parent>
 
     <artifactId>easy-ddd-domain</artifactId>
+    <name>easy-ddd-domain</name>
+    <description>Domain model foundations and events for the easy-ddd framework.</description>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>

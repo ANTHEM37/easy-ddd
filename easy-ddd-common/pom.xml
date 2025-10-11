@@ -10,6 +10,8 @@
     </parent>
 
     <artifactId>easy-ddd-common</artifactId>
+    <name>easy-ddd-common</name>
+    <description>Common primitives and shared interfaces for the easy-ddd framework.</description>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>

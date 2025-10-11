@@ -25,7 +25,7 @@ graph TD
 
   AggRepo[AbstractDomainRepository] -->|publish events| EPublisher
   EPublisher --> Spring[Spring ApplicationEventPublisher]
-  Spring -->|@EventListener / @TransactionalEventListener| EHandler[AbstractEventHandler]
+  Spring -->|EventListener and TransactionalEventListener| EHandler[AbstractEventHandler]
 
   Executors --> CBus
   Executors --> QBus

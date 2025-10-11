@@ -10,6 +10,8 @@
     </parent>
 
     <artifactId>easy-ddd-infrastructure</artifactId>
+    <name>easy-ddd-infrastructure</name>
+    <description>Spring-based infrastructure: buses, event publisher/handler, and repository skeleton.</description>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>

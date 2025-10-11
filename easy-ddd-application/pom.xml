@@ -10,6 +10,8 @@
     </parent>
 
     <artifactId>easy-ddd-application</artifactId>
+    <name>easy-ddd-application</name>
+    <description>Application layer contracts: command/query bus and handlers.</description>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
@@ -21,7 +23,6 @@
         <dependency>
             <groupId>io.github.anthem37</groupId>
             <artifactId>easy-ddd-common</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

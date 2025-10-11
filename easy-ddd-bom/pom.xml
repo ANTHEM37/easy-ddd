@@ -11,6 +11,8 @@
 
     <artifactId>easy-ddd-bom</artifactId>
     <packaging>pom</packaging>
+    <name>easy-ddd-bom</name>
+    <description>Maven BOM for the easy-ddd framework modules.</description>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>

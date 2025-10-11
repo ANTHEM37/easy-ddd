@@ -256,3 +256,38 @@ easy:
 - 仓储内发布事件：保持事件聚合在一次持久化之后统一发布，简化一致性管理。
 - 领域事件语义化：事件类型命名遵循领域语言；避免技术细节泄漏到事件数据。
 - 防腐层（ACL）：在应用层对外部系统数据/模型进行适配与转换，避免侵入领域层。
+
+## 发布到 Maven 中央仓库（OSSRH）
+- 前置准备：
+  - 注册 Sonatype 账号并创建工程条目（GroupId：`io.github.anthem37`）。
+  - 安装并生成 GPG 密钥，确保可签名（`gpg --full-generate-key`）。
+  - 将公钥上传到公钥服务器，例如 `keyserver.ubuntu.com`。
+- 配置 `~/.m2/settings.xml`：
+```xml
+<settings>
+  <servers>
+    <server>
+      <id>ossrh</id>
+      <username>${env.OSSRH_USERNAME}</username>
+      <password>${env.OSSRH_PASSWORD}</password>
+    </server>
+  </servers>
+  <profiles>
+    <profile>
+      <id>gpg</id>
+      <properties>
+        <gpg.executable>gpg</gpg.executable>
+        <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
+      </properties>
+    </profile>
+  </profiles>
+  <activeProfiles>
+    <activeProfile>gpg</activeProfile>
+  </activeProfiles>
+</settings>
+```
+- 部署命令：
+  - 快照版：`mvn -DskipTests deploy`
+  - 发布版：将版本去掉 `-SNAPSHOT` 后运行：`mvn -DskipTests -P release deploy`
+  - 如需本地签名调试：`mvn -Dgpg.passphrase=$GPG_PASSPHRASE -DskipTests deploy`
+- 注意：根 `pom.xml` 已包含源码/Javadoc/GPG 签名与 Nexus Staging 插件配置；发布版需到 Sonatype 后台关闭并释放 staging。
