@@ -15,7 +15,7 @@ import io.github.anthem37.easy.ddd.common.cqrs.query.IQueryBus;
  * 4. DTO转换
  *
  * @author anthem37
- * @date 2025/8/13 16:45:32
+ * @since 2025/8/13 16:45:32
  */
 public interface IApplicationService {
 

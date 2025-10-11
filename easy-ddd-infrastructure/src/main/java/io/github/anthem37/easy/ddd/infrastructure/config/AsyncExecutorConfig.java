@@ -19,7 +19,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * 支持通过外部配置文件进行参数化配置
  *
  * @author anthem37
- * @date 2025/8/13 15:38:42
+ * @since 2025/8/13 15:38:42
  */
 @Slf4j
 @Configuration

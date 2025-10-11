@@ -12,7 +12,7 @@ import java.util.Optional;
  * @param <T>  聚合根类型
  * @param <ID> 聚合根标识类型
  * @author anthem37
- * @date 2025/8/14 14:05:38
+ * @since 2025/8/14 14:05:38
  */
 public interface IDomainRepository<T extends AbstractAggregateRoot<ID>, ID> {
 

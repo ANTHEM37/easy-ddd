@@ -6,7 +6,7 @@ package io.github.anthem37.easy.ddd.common.cqrs.query;
  *
  * @param <R> 查询返回结果类型
  * @author anthem37
- * @date 2025/8/13 19:24:56
+ * @since 2025/8/13 19:24:56
  */
 public interface IQuery<R> {
 

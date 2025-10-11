@@ -17,7 +17,7 @@ import java.util.concurrent.Executor;
  * @param <M> 消息类型（命令或查询）
  * @param <H> 处理器类型（命令处理器或查询处理器）
  * @author anthem37
- * @date 2025/8/13 14:35:27
+ * @since 2025/8/13 14:35:27
  */
 @Slf4j
 public abstract class AbstractMessageBus<M, H> implements ApplicationContextAware {

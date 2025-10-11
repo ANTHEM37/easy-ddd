@@ -7,7 +7,7 @@ import java.util.concurrent.CompletableFuture;
  * 负责命令的路由和执行
  *
  * @author anthem37
- * @date 2025/8/14 10:45:18
+ * @since 2025/8/14 10:45:18
  */
 public interface ICommandBus {
 

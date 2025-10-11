@@ -6,7 +6,7 @@ package io.github.anthem37.easy.ddd.common.cqrs.command;
  * @param <C> 命令类型
  * @param <R> 返回结果类型
  * @author anthem37
- * @date 2025/8/14 08:17:35
+ * @since 2025/8/14 08:17:35
  */
 public interface ICommandHandler<C extends ICommand<R>, R> {
 

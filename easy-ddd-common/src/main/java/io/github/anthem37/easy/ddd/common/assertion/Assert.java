@@ -12,7 +12,7 @@ import java.util.function.Supplier;
  * 用于统一管理业务异常的抛出
  *
  * @author anthem37
- * @date 2025/8/13 16:58:42
+ * @since 2025/8/13 16:58:42
  */
 public final class Assert {
 

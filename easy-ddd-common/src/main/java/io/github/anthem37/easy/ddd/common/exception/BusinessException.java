@@ -10,7 +10,7 @@ import java.io.Serial;
  * 用于表示业务逻辑错误
  *
  * @author anthem37
- * @date 2025/8/13 17:28:53
+ * @since 2025/8/13 17:28:53
  */
 @Setter
 @Getter

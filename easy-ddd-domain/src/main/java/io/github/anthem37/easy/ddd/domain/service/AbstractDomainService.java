@@ -9,7 +9,7 @@ import io.github.anthem37.easy.ddd.domain.event.IDomainEvent;
  * 提供通用的业务规则检查和事件发布功能
  *
  * @author anthem37
- * @date 2025/8/13 19:48:25
+ * @since 2025/8/13 19:48:25
  */
 public abstract class AbstractDomainService implements IDomainService {
 

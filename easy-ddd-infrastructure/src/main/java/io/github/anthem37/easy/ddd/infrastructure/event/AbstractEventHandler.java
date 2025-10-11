@@ -16,7 +16,7 @@ import java.util.function.Consumer;
  * 提供同步和异步事件处理的标准实现
  *
  * @author anthem37
- * @date 2025/8/14 12:18:53
+ * @since 2025/8/14 12:18:53
  */
 @Slf4j
 public abstract class AbstractEventHandler<T extends IDomainEvent> implements IEventHandler<T> {

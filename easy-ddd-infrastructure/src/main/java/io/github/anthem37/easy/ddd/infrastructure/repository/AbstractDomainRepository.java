@@ -18,7 +18,7 @@ import java.util.Optional;
  * @param <T>  聚合根类型
  * @param <ID> 聚合根标识类型
  * @author anthem37
- * @date 2025/8/14 16:52:19
+ * @since 2025/8/14 16:52:19
  */
 @Slf4j
 public abstract class AbstractDomainRepository<T extends AbstractAggregateRoot<ID>, ID> implements IDomainRepository<T, ID> {

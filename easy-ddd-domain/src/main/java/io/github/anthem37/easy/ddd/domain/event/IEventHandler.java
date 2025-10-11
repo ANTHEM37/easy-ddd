@@ -5,7 +5,7 @@ package io.github.anthem37.easy.ddd.domain.event;
  *
  * @param <T> 事件类型
  * @author anthem37
- * @date 2025/8/14 10:12:36
+ * @since 2025/8/14 10:12:36
  */
 public interface IEventHandler<T extends IDomainEvent> {
 

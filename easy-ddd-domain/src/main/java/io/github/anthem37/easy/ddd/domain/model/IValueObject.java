@@ -12,7 +12,7 @@ import java.io.Serializable;
  * 5. 自验证
  *
  * @author anthem37
- * @date 2025/8/14 13:28:45
+ * @since 2025/8/14 13:28:45
  */
 public interface IValueObject extends Serializable {
 

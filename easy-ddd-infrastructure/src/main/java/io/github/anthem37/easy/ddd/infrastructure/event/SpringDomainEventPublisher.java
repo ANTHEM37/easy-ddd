@@ -13,7 +13,7 @@ import java.util.concurrent.Executor;
  * 实现领域层定义的EventPublisher接口
  *
  * @author anthem37
- * @date 2025/8/14 16:15:47
+ * @since 2025/8/14 16:15:47
  */
 @Slf4j
 public class SpringDomainEventPublisher implements DomainEventPublisher.EventPublisher {

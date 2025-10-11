@@ -9,7 +9,7 @@ package io.github.anthem37.easy.ddd.domain.service;
  * 4. 无状态的业务操作
  *
  * @author anthem37
- * @date 2025/8/13 14:52:19
+ * @since 2025/8/13 14:52:19
  */
 public interface IDomainService {
 

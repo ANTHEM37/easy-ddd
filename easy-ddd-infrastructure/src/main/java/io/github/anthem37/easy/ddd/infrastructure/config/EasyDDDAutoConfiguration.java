@@ -26,7 +26,7 @@ import java.util.concurrent.Executor;
  * 提供框架核心组件的自动装配
  *
  * @author anthem37
- * @date 2025/8/14 13:47:56
+ * @since 2025/8/14 13:47:56
  */
 @Slf4j
 @Configuration

@@ -13,7 +13,7 @@ import java.util.List;
  *
  * @param <ID> 聚合根标识类型
  * @author anthem37
- * @date 2025/8/14 09:27:38
+ * @since 2025/8/14 09:27:38
  */
 public abstract class AbstractAggregateRoot<ID> extends AbstractEntity<ID> {
 

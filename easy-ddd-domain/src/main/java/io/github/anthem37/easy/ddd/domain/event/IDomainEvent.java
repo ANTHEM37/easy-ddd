@@ -10,7 +10,7 @@ import java.util.UUID;
  * 领域事件表示领域中发生的重要业务事件
  *
  * @author anthem37
- * @date 2025/8/13 20:15:42
+ * @since 2025/8/13 20:15:42
  */
 public interface IDomainEvent {
 

@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
  * 纯领域层实现，不依赖外部框架
  *
  * @author anthem37
- * @date 2025/8/13 18:05:37
+ * @since 2025/8/13 18:05:37
  */
 @Slf4j
 public class DomainEventPublisher {

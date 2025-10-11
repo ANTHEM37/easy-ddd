@@ -9,7 +9,9 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>easy-ddd</name>
-    <description>DDD for Java: common primitives, domain model, application contracts, and Spring-based infrastructure.</description>
+    <description>DDD for Java: common primitives, domain model, application contracts, and Spring-based
+        infrastructure.
+    </description>
     <url>https://github.com/anthem37/easy-ddd</url>
 
     <licenses>

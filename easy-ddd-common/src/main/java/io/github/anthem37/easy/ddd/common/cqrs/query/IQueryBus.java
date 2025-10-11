@@ -7,7 +7,7 @@ import java.util.concurrent.CompletableFuture;
  * 负责查询的路由和执行
  *
  * @author anthem37
- * @date 2025/8/13 18:42:15
+ * @since 2025/8/13 18:42:15
  */
 public interface IQueryBus {
 

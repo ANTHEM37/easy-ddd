@@ -7,7 +7,7 @@ import java.io.Serial;
  * 用于表示业务编排过程中的错误
  *
  * @author CodeBuddy
- * @date 2025/8/15
+ * @since 2025/8/15
  */
 public class BizFlowException extends BusinessException {
 
