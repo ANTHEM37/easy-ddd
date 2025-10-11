@@ -30,7 +30,9 @@ graph TD
   Executors --> CBus
   Executors --> QBus
   Executors --> EPublisher
+
 ```
+
 
 ## 使用步骤
 1. 引入 `easy-ddd-infrastructure` 依赖，确保自动装配生效（Spring Boot 环境）。

@@ -20,8 +20,9 @@ flowchart TD
   Qry --> Cond{StockEnough?}
   Cond -- Yes --> Ship[CreateShipmentCommand]
   Cond -- No --> Fail[CancelOrderCommand]
-```
 
+
+```
 ```java
 BizFlow flow = BizFlow.create("orderFlow")
   .command(new PlaceOrderCommand(...))

@@ -177,6 +177,8 @@ sequenceDiagram
   participant Repo as DomainRepository
   participant Pub as DomainEventPublisher
   participant EH as EventHandler
+  participant QBus as QueryBus
+  participant QH as QueryHandler
 
   App->>CBus: send(Command)
   CBus->>H: route & handle(cmd)

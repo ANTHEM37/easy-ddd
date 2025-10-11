@@ -69,6 +69,7 @@ sequenceDiagram
   participant Repo as Repository
   participant Pub as EventPublisher
   participant EH as EventHandler
+  participant External as ExternalSystem
 
   Cmd->>Agg: place()
   Agg->>Agg: addDomainEvent(OrderPlaced)
