@@ -20,7 +20,7 @@
     <dependencies>
         <dependency>
             <groupId>io.github.anthem37</groupId>
-            <artifactId>easy-ddd-infrastructure</artifactId>
+            <artifactId>easy-ddd-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
