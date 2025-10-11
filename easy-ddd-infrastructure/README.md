@@ -1,157 +1,142 @@
 # easy-ddd-infrastructure
 
-基础设施层，提供与 Spring 的集成实现：命令/查询总线、事件发布器与自动装配、线程池配置、标准事件处理器基类。
+提供与 Spring 深度集成的基础设施实现：命令/查询总线、领域事件发布与处理、通用仓储骨架，以及异步执行器自动配置。
 
-## 目录
-- [easy-ddd-infrastructure](#easy-ddd-infrastructure)
-  - [目录](#目录)
-  - [核心组件](#核心组件)
-  - [自动装配与兼容性](#自动装配与兼容性)
-  - [线程池配置与调优](#线程池配置与调优)
-  - [事件处理器基类用法](#事件处理器基类用法)
-  - [总线路由与缓存机制](#总线路由与缓存机制)
-  - [错误处理与建议](#错误处理与建议)
-  - [最佳实践](#最佳实践)
-  - [FAQ](#faq)
-  - [参考](#参考)
+关联模块：
+- 上层应用服务契约：[easy-ddd-application](../easy-ddd-application/README.md)
+- 领域模型与事件：[easy-ddd-domain](../easy-ddd-domain/README.md)
+- 通用接口与编排：[easy-ddd-common](../easy-ddd-common/README.md)
 
-## 核心组件
+## 主要组件
+- `EasyDDDAutoConfiguration`：自动装配 `ICommandBus`、`IQueryBus`、`DomainEventPublisher`，并注入异步执行器。
+- `CommandBus` / `QueryBus`：实现消息总线，扫描并缓存处理器，路由命令/查询到对应 Handler。
+- `SpringDomainEventPublisher`：基于 Spring `ApplicationEventPublisher` 的发布器，支持同步/异步与事务阶段触发。
+- `AbstractEventHandler`：事件处理基类，内置 `@EventListener` 与 `@TransactionalEventListener` 机制。
+- `AbstractDomainRepository`：仓储通用骨架，封装聚合根 CRUD 与事件发布（保存/更新后聚合根事件自动发布）。
+- `AsyncExecutorConfig`：为命令、查询、事件分别提供可监控的线程池（`commandExecutor`/`queryExecutor`/`eventExecutor`）。
 
-- bus
-  - AbstractMessageBus<M,H>：总线抽象，校验、处理器查找、同步/异步发送
-  - CommandBus：命令总线实现（缓存处理器、初始化时预注册）
-  - QueryBus：查询总线实现（缓存处理器、初始化时预注册）
-- event
-  - SpringDomainEventPublisher：基于 Spring 的事件发布器，支持同步/异步
-  - AbstractEventHandler<T>：标准事件处理器基类，支持 IN_PROCESS / AFTER_COMMIT / AFTER_ROLLBACK
-- config
-  - AsyncExecutorConfig：查询/命令/事件三类线程池，支持外部化配置
-  - EasyDDDAutoConfiguration：自动装配 CommandBus / QueryBus / EventPublisher 并注册到 DomainEventPublisher
+## 架构图
+```mermaid
+graph TD
+  AutoCfg[EasyDDDAutoConfiguration] --> CBus[CommandBus]
+  AutoCfg --> QBus[QueryBus]
+  AutoCfg --> EPublisher[SpringDomainEventPublisher]
+  AutoCfg --> Executors[AsyncExecutorConfig]
 
-## 自动装配与兼容性
+  AggRepo[AbstractDomainRepository] -->|publish events| EPublisher
+  EPublisher --> Spring[Spring ApplicationEventPublisher]
+  EHandler[AbstractEventHandler] -->|@EventListener / @TransactionalEventListener| Spring
 
-- 现代方式（Spring Boot 3 推荐）：`META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`
-  ```
-  io.github.anthem37.easy.ddd.infrastructure.config.EasyDDDAutoConfiguration
-  ```
-- 兼容方式（legacy）：`src/main/resources/META-INF/spring.factories`
-  ```
-  org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  io.github.anthem37.easy.ddd.infrastructure.config.EasyDDDAutoConfiguration
-  ```
-- 引入该模块后，Spring Boot 将自动装配：
-  - `ICommandBus`、`IQueryBus`（分别使用 `commandExecutor`、`queryExecutor`）
-  - `DomainEventPublisher.EventPublisher`（使用 `ApplicationEventPublisher` 与 `eventExecutor`）
-- 启动后注册发布器到领域层静态入口：
-  ```java
-  DomainEventPublisher.setEventPublisher(publisher);
-  ```
+  Executors --> CBus
+  Executors --> QBus
+  Executors --> EPublisher
+```
 
-## 线程池配置与调优
+## 使用步骤
+1. 引入 `easy-ddd-infrastructure` 依赖，确保自动装配生效（Spring Boot 环境）。
+2. 定义命令/查询与处理器，并声明为 Spring Bean：
 
-`AsyncExecutorConfig` 支持外部化配置前缀 `easy.ddd.async.*`：
+```java
+class PlaceOrderCommand implements ICommand<String> { /* 字段与校验 */ }
 
+@Component
+class PlaceOrderHandler implements ICommandHandler<PlaceOrderCommand, String> {
+  public String handle(PlaceOrderCommand cmd) { /* 下单逻辑 */ return "OK"; }
+  public Class<PlaceOrderCommand> getSupportedCommandType() { return PlaceOrderCommand.class; }
+}
+
+class GetOrderQuery implements IQuery<Order> { /* 参数 */ }
+
+@Component
+class GetOrderHandler implements IQueryHandler<GetOrderQuery, Order> {
+  public Order handle(GetOrderQuery q) { /* 查询逻辑 */ return new Order(); }
+  public Class<GetOrderQuery> getSupportedQueryType() { return GetOrderQuery.class; }
+}
+```
+
+3. 使用仓储骨架并在聚合根中添加事件：
+```java
+class OrderAgg extends AbstractAggregateRoot<String> {
+  void markPlaced() { addDomainEvent(new OrderPlacedEvent(getId())); }
+}
+
+abstract class OrderRepository extends AbstractDomainRepository<OrderAgg, String> { /* 具体持久化 */ }
+```
+
+4. 编写事件处理器，支持同步/异步与事务阶段：
+```java
+@Component
+class OrderPlacedHandler extends AbstractEventHandler<OrderPlacedEvent> {
+  public Class<OrderPlacedEvent> getSupportedEventType() { return OrderPlacedEvent.class; }
+  protected void doHandle(OrderPlacedEvent e) { /* 发消息、回写索引等 */ }
+}
+```
+
+5. 可选：在配置中调整异步执行器参数：
 ```yaml
 easy:
   ddd:
     async:
       query:
-        corePoolSizeMultiplier: 1.0
-        maxPoolSizeMultiplier: 1.5
-        queueCapacity: 50
-        keepAliveSeconds: 60
-        rejectedExecutionPolicy: CALLER_RUNS
-        awaitTerminationSeconds: 30
+        queueCapacity: 200
+      command:
+        maxPoolSizeMultiplier: 2.0
+      event:
+        keepAliveSeconds: 300
+```
+
+## 适用场景与优劣势
+- 适用：需要在 Spring 环境中快速落地 CQRS、领域事件与异步化；对事件的事务边界有明确要求（如 AFTER_COMMIT）。
+- 优势：自动装配、处理器缓存路由、事务事件机制、线程池可观测与调优。
+- 劣势：强依赖 Spring Boot；具体 DAO/ORM 需自行实现；事件发布器默认注册为全局，测试需按需注入或替换。
+
+## 配置项详解（AsyncExecutorConfig）
+- 属性前缀：`easy.ddd.async.*`
+- 通用属性：
+  - `corePoolSizeMultiplier`：核心线程数乘数（乘以 CPU 核心数），默认 `1.0`
+  - `maxPoolSizeMultiplier`：最大线程数乘数，默认 `1.5`（事件可设为 `2.0`）
+  - `queueCapacity`：队列容量，默认 `query=50`、`command=200`、`event=500`
+  - `keepAliveSeconds`：空闲线程存活时间，默认 `query=60`、`command=120`、`event=300`
+  - `rejectedExecutionPolicy`：拒绝策略，`CALLER_RUNS`/`DISCARD_OLDEST`/`DISCARD`/`ABORT`
+  - `waitForTasksToCompleteOnShutdown`：关闭时是否等待任务完成
+  - `awaitTerminationSeconds`：关闭等待超时时间（秒）
+- Bean 名称：`queryExecutor` / `commandExecutor` / `eventExecutor`
+
+示例：
+```yaml
+easy:
+  ddd:
+    async:
       command:
         corePoolSizeMultiplier: 1.0
         maxPoolSizeMultiplier: 1.5
         queueCapacity: 200
         keepAliveSeconds: 120
         rejectedExecutionPolicy: CALLER_RUNS
-        awaitTerminationSeconds: 45
       event:
-        corePoolSizeMultiplier: 1.0
         maxPoolSizeMultiplier: 2.0
         queueCapacity: 500
         keepAliveSeconds: 300
-        rejectedExecutionPolicy: CALLER_RUNS
-        awaitTerminationSeconds: 60
 ```
 
-- 配置项说明
-  - corePoolSizeMultiplier：核心线程数乘数（相对 CPU 核心数）
-  - maxPoolSizeMultiplier：最大线程数乘数（相对 CPU 核心数）
-  - queueCapacity：队列容量
-  - keepAliveSeconds：空闲线程存活秒数
-  - rejectedExecutionPolicy：拒绝策略（CALLER_RUNS / DISCARD_OLDEST / DISCARD / ABORT）
-  - awaitTerminationSeconds：关闭时等待秒数
-  - waitForTasksToCompleteOnShutdown：优雅关闭是否等待任务完成（默认 true）
+## 事件事务阶段与处理
+- 事件阶段枚举：`IN_PROCESS`、`AFTER_COMMIT`、`AFTER_ROLLBACK`（默认 `AFTER_COMMIT`）。
+- 处理机制（`AbstractEventHandler`）：
+  - `@EventListener`：处理 `IN_PROCESS` 事件（同步）。
+  - `@TransactionalEventListener(TransactionPhase.AFTER_COMMIT)`：处理提交后的事件。
+  - `@TransactionalEventListener(TransactionPhase.AFTER_ROLLBACK)`：处理回滚后的事件。
+- 指定阶段：通过 `TriggeredPhaseEvent` 包装事件以指定明确阶段。
 
-- 场景建议
-  - CPU 密集（大计算）：query/core=1.0, max=1.5, queue=50
-  - IO 密集（外部调用/消息）：event/core=1.0, max=2.0, queue=500
-  - 混合（通用业务）：command/core=1.0, max=1.5, queue=200
-
-- 监控建议（可选）
-  - `MonitorableThreadPoolTaskExecutor` 暴露指标：activeCount、poolSize、queueSize、completedTaskCount、taskCount
-  - Micrometer 集成示例（骨架）：
-    ```java
-    @Bean
-    MeterBinder commandExecutorMetrics(MonitorableThreadPoolTaskExecutor exec) {
-      return registry -> {
-        Gauge.builder("easy.ddd.command.queue.size", exec, MonitorableThreadPoolTaskExecutor::getQueueSize).register(registry);
-        Gauge.builder("easy.ddd.command.active", exec, MonitorableThreadPoolTaskExecutor::getActiveCount).register(registry);
-      };
-    }
-    ```
-
-## 事件处理器基类用法
-
+示例：
 ```java
-@Component
-public class OrderCreatedHandler extends AbstractEventHandler<OrderCreatedEvent> {
-  @Override protected void doHandle(OrderCreatedEvent e) { /* 业务处理... */ }
-  @Override protected void doHandleAfterCommit(OrderCreatedEvent e) { /* 发MQ/通知 */ }
-  @Override public Class<OrderCreatedEvent> getSupportedEventType() { return OrderCreatedEvent.class; }
-}
+// 指定在事务提交后触发
+publisher.publish(new TriggeredPhaseEvent(domainEvent, TriggeredPhase.AFTER_COMMIT));
+
+// 同步触发（无事务）
+publisher.publish(new TriggeredPhaseEvent(domainEvent, TriggeredPhase.IN_PROCESS));
 ```
 
-- IN_PROCESS：通过 `@EventListener` 同步处理
-- AFTER_COMMIT / AFTER_ROLLBACK：通过 `@TransactionalEventListener` 在事务边界后处理
-
-## 总线路由与缓存机制
-
-- 处理器通过 `getSupported*Type()` 声明支持的消息类型
-- 启动阶段 `afterPropertiesSet()` 预扫描并缓存
-- 运行期若缓存未命中，将通过 `applicationContext.getBeansOfType` 查找并回填缓存
-- 约定：请返回具体类型（如 `CreateOrderCommand.class`），避免返回接口或 Object，确保路由精准与缓存命中
-- 多处理器匹配规则：使用 `isAssignableFrom` 首个匹配即命中；如出现歧义，建议收敛到明确的子类型或加限界接口
-
-## 错误处理与建议
-
-- 总线处理异常：记录日志并抛出原始异常
-- 事件发布失败：
-  - 同步发布：使用 `Assert.fail` 抛出业务异常（阻断事务）
-  - 异步发布：仅记录日志，避免影响主流程；建议结合重试与幂等
-- 事件处理异常：
-  - 覆写 `handleError/handleAfterCommitError/handleAfterRollbackError` 自定义策略（报警、重试、死信）
-
-## 最佳实践
-
-- 命令/查询处理器避免阻塞 IO；异步事件处理使用 `eventExecutor`
-- 合理设置线程池乘数与队列容量，结合 CPU 核心数与业务峰值
-- 命令改变状态、查询只读；在领域层内进行不变式与规则校验
-- 明确事务边界：写后事件用 AFTER_COMMIT；失败补偿用 AFTER_ROLLBACK
-
-## FAQ
-
-- Q：为何命令/查询需要 `getSupported*Type()`？
-  - A：用于构建路由缓存，显著降低运行期查找成本。
-- Q：如何切换到现代自动装配？
-  - A：确保存在 `AutoConfiguration.imports` 文件；保留 `spring.factories` 以兼容旧项目（可选）。
-
-## 参考
-
-- `config/AsyncExecutorConfig`、`config/EasyDDDAutoConfiguration`
-- `event/SpringDomainEventPublisher`、`event/AbstractEventHandler`
-- `bus/AbstractMessageBus`、`bus/impl/CommandBus`、`bus/impl/QueryBus`
+## 调优建议
+- 命令与查询：偏 CPU 密集，建议乘数在 1.0~1.5；根据并发调整队列容量。
+- 事件：偏 IO 密集，乘数可提升至 2.0，队列容量增大以削峰。
+- 监控：扩展 `MonitorableThreadPoolTaskExecutor` 以暴露线程池指标；结合 `Micrometer` 上报。

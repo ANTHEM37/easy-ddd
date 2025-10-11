@@ -1,91 +1,79 @@
 # easy-ddd-domain
 
-纯领域层模块，定义领域模型抽象与事件协议，不依赖具体基础设施。
+提供领域模型基类与事件机制，包括实体/聚合根、领域事件与处理器、仓储接口与领域服务基类。
 
-## 目录
-- [easy-ddd-domain](#easy-ddd-domain)
-  - [目录](#目录)
-  - [核心类](#核心类)
-  - [层内交互](#层内交互)
-  - [事件触发阶段与事务边界](#事件触发阶段与事务边界)
-  - [示例聚合发布事件](#示例聚合发布事件)
-  - [约束与建议](#约束与建议)
-  - [测试建议](#测试建议)
+## 主要类型
+- `AbstractEntity`：实体基类，封装唯一 ID 与生命周期校验。
+- `AbstractAggregateRoot`：聚合根基类，支持领域事件收集与版本控制。
+- `IDomainEvent`：领域事件契约，定义事件类型、聚合 ID、数据与元信息。
+- `IEventHandler` / `AbstractEventHandler`：事件处理器接口与 Spring 集成基类，支持事务阶段 `AFTER_COMMIT` 等。
+- `IDomainRepository` / `AbstractDomainRepository`：仓储接口与基础实现（发布聚合根事件）。
+- `AbstractDomainService`：领域服务基类，提供发布单个/多个事件与带事件的业务执行封装。
 
-## 核心类
-
-- model
-  - AbstractEntity<ID>：实体基类，ID 非空校验
-  - AbstractAggregateRoot<ID>：聚合根，事件收集、版本控制
-  - IValueObject：值对象标记接口（强调不可变与值相等）
-- event
-  - IDomainEvent：领域事件协议（事件类型、数据、元数据、触发阶段、是否异步）
-  - DomainEventPublisher：静态发布器入口（由基础设施注入实现）
-  - TriggeredPhaseEvent：包装事件并指定触发阶段
-  - IEventHandler<T>：事件处理器接口
-- repository
-  - IDomainRepository<T,ID>：聚合仓储抽象
-- service
-  - IDomainService、AbstractDomainService：发布事件、通用执行模板
-
-## 层内交互
-
+## 事件触发模式
 ```mermaid
 sequenceDiagram
-    participant Agg as 聚合根
-    participant DS as 领域服务
-    participant DEP as DomainEventPublisher
+  participant Agg as AggregateRoot
+  participant Repo as DomainRepository
+  participant Pub as DomainEventPublisher
+  participant EH as EventHandler
 
-    DS->>Agg: 修改状态、addDomainEvent(event)
-    DS->>DEP: publish(event)
-    Note right of DEP: 基础设施层注入具体 EventPublisher
+  Agg->>Agg: addDomainEvent(event)
+  Repo->>Pub: publish(events)
+  Pub->>EH: dispatch via Spring
+  EH->>EH: handle(event) (sync/async, transactional)
 ```
 
-## 事件触发阶段与事务边界
-
-- IN_PROCESS：同步处理（在当前事务中）
-  - 适用：需要立即完成的侧效应、校验链
-  - 风险：增加事务耗时，失败将影响主流程
-- AFTER_COMMIT：事务提交后处理
-  - 适用：外部通知、消息投递、异步集成
-  - 建议：处理器实现幂等、可重试
-- AFTER_ROLLBACK：事务回滚后处理
-  - 适用：补偿/清理操作
-
-选择建议：
-- 写操作后尽量使用 AFTER_COMMIT，隔离外部副作用
-- 失败补偿逻辑用 AFTER_ROLLBACK
-- 同步链路仅限轻量且必须的步骤
-
-## 示例聚合发布事件
-
+## 示例
 ```java
-public class Order extends AbstractAggregateRoot<String> {
-  public void create(...) {
-    // 业务校验...
-    addDomainEvent(new OrderCreatedEvent(this.id()));
-    incrementVersion();
-  }
+record OrderPlacedEvent(String orderId) implements IDomainEvent {
+  public String getEventType() { return "order.placed"; }
+  public Object getAggregateId() { return orderId; }
 }
 
-public class OrderService extends AbstractDomainService {
-  public String createOrder(...) {
-    Order order = new Order(...);
-    order.create(...);
-    publishEvents(order.getDomainEvents().toArray(IDomainEvent[]::new));
-    return order.getId();
-  }
+class OrderAgg extends AbstractAggregateRoot<String> {
+  void place() { addDomainEvent(new OrderPlacedEvent(getId())); }
 }
 ```
 
-## 约束与建议
+## 优劣势
+- 优势：事件驱动的领域模型表达、聚合根版本管理、与 Spring 事务事件无缝衔接。
+- 劣势：需要明确事件边界与一致性策略；仓储需结合持久化实现。
 
-- 领域层不依赖 Spring，只依赖抽象协议
-- 仓储接口由基础设施具体实现注入
-- 值对象不可变，重写 equals/hashCode
-- 领域事件数据应足够描述上下文（eventData/metadata）
+关联模块：
+- [easy-ddd-infrastructure](../easy-ddd-infrastructure/README.md)
+- [easy-ddd-common](../easy-ddd-common/README.md)
+- [easy-ddd-application](../easy-ddd-application/README.md)
 
-## 测试建议
+## 事件建模实践
+- 语义化命名：事件名称遵循领域语言（如 `order.placed` 而非技术术语）。
+- 聚合标识：`getAggregateId()` 返回与聚合根一致的标识，便于追踪与审计。
+- 数据最小化：事件包含完成处理所需的最小数据，避免泄露实现细节。
+- 阶段控制：默认 `AFTER_COMMIT`；需同步触发时使用 `IN_PROCESS`；回滚补偿用 `AFTER_ROLLBACK`。
 
-- 针对聚合根的单元测试：不变式与事件收集（hasUnpublishedEvents）
-- 针对领域服务：发布事件数量与类型断言（使用自定义 EventPublisher stub）
+## 仓储策略
+- 统一发布：在 `save`/`update` 后统一发布聚合根收集的事件，避免散落发布。
+- 版本与并发：聚合根可维护版本号用于乐观锁；命令处理器应确保幂等。
+- 映射与持久化：仓储实现负责模型与持久化对象的映射（可用 MapStruct/JPA/Hibernate）。
+
+## 一致性模式
+- 最终一致性：跨聚合通过事件驱动实现最终一致性；可在事件处理器中执行异步操作。
+- 同步一致性：在同一事务内进行校验与变更（命令处理器内），必要时使用 `IN_PROCESS` 事件。
+- 补偿与回滚：使用 `AFTER_ROLLBACK` 事件触发补偿逻辑（如撤销外部副作用）。
+
+## 扩展示例（序列图）
+```mermaid
+sequenceDiagram
+  participant Cmd as CommandHandler
+  participant Agg as Aggregate
+  participant Repo as Repository
+  participant Pub as EventPublisher
+  participant EH as EventHandler
+
+  Cmd->>Agg: place()
+  Agg->>Agg: addDomainEvent(OrderPlaced)
+  Cmd->>Repo: save(agg)
+  Repo->>Pub: publish(agg.events)
+  Pub->>EH: dispatch AFTER_COMMIT
+  EH->>External: notify downstream
+```
