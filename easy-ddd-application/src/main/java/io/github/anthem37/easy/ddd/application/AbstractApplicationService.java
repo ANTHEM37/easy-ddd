@@ -2,7 +2,6 @@ package io.github.anthem37.easy.ddd.application;
 
 import io.github.anthem37.easy.ddd.common.cqrs.command.ICommandBus;
 import io.github.anthem37.easy.ddd.common.cqrs.query.IQueryBus;
-import io.github.anthem37.easy.ddd.common.flow.BizFlow;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -18,6 +17,5 @@ public abstract class AbstractApplicationService implements IApplicationService 
 
     private final ICommandBus commandBus;
     private final IQueryBus queryBus;
-    private final BizFlow bizFlow;
 
 }
