@@ -42,20 +42,32 @@ graph TD
 2. 定义命令/查询与处理器，并声明为 Spring Bean：
 
 ```java
-class PlaceOrderCommand implements ICommand<String> { /* 字段与校验 */ }
+class PlaceOrderCommand implements ICommand<String> { /* 字段与校验 */
+}
 
 @Component
 class PlaceOrderHandler implements ICommandHandler<PlaceOrderCommand, String> {
-  public String handle(PlaceOrderCommand cmd) { /* 下单逻辑 */ return "OK"; }
-  public Class<PlaceOrderCommand> getSupportedCommandType() { return PlaceOrderCommand.class; }
+    public String handle(PlaceOrderCommand cmd) { /* 下单逻辑 */
+        return "OK";
+    }
+
+    public Class<PlaceOrderCommand> getSupportedCommandType() {
+        return PlaceOrderCommand.class;
+    }
 }
 
-class GetOrderQuery implements IQuery<Order> { /* 参数 */ }
+class GetOrderQuery implements IQuery<Order> { /* 参数 */
+}
 
 @Component
 class GetOrderHandler implements IQueryHandler<GetOrderQuery, Order> {
-  public Order handle(GetOrderQuery q) { /* 查询逻辑 */ return new Order(); }
-  public Class<GetOrderQuery> getSupportedQueryType() { return GetOrderQuery.class; }
+    public Order handle(GetOrderQuery q) { /* 查询逻辑 */
+        return new Order();
+    }
+
+    public Class<GetOrderQuery> getSupportedQueryType() {
+        return GetOrderQuery.class;
+    }
 }
 ```
 

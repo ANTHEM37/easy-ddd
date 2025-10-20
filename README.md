@@ -351,7 +351,7 @@ easy:
     <activeProfiles>
         <activeProfile>gpg</activeProfile>
     </activeProfiles>
-}
+    }
 ```
 
 - 部署命令：

@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ApplicationEventPublisher {
 
     @Getter
-    private static IApplicationEventPublisher eventPublisher;
+    private static volatile IApplicationEventPublisher eventPublisher;
 
     /**
      * 设置事件发布器实现
