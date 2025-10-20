@@ -1,10 +1,13 @@
 package io.github.anthem37.easy.ddd.infrastructure.config;
 
+import io.github.anthem37.easy.ddd.application.event.IApplicationEventPublisher;
 import io.github.anthem37.easy.ddd.common.cqrs.command.ICommandBus;
 import io.github.anthem37.easy.ddd.common.cqrs.query.IQueryBus;
 import io.github.anthem37.easy.ddd.domain.event.DomainEventPublisher;
+import io.github.anthem37.easy.ddd.domain.event.IDomainEventPublisher;
 import io.github.anthem37.easy.ddd.infrastructure.bus.impl.CommandBus;
 import io.github.anthem37.easy.ddd.infrastructure.bus.impl.QueryBus;
+import io.github.anthem37.easy.ddd.infrastructure.event.SpringApplicationEventPublisher;
 import io.github.anthem37.easy.ddd.infrastructure.event.SpringDomainEventPublisher;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -58,19 +61,35 @@ public class EasyDDDAutoConfiguration implements ApplicationRunner {
      * 领域事件发布器
      */
     @Bean
-    @ConditionalOnMissingBean(DomainEventPublisher.EventPublisher.class)
-    public DomainEventPublisher.EventPublisher domainEventPublisher(ApplicationEventPublisher applicationEventPublisher, @Qualifier("eventExecutor") Executor eventExecutor) {
-        DomainEventPublisher.EventPublisher publisher = new SpringDomainEventPublisher(applicationEventPublisher, eventExecutor);
+    @ConditionalOnMissingBean(IDomainEventPublisher.class)
+    public IDomainEventPublisher domainEventPublisher(ApplicationEventPublisher applicationEventPublisher, @Qualifier("domainEventExecutor") Executor eventExecutor) {
+        IDomainEventPublisher publisher = new SpringDomainEventPublisher(applicationEventPublisher, eventExecutor);
         // 注册到领域层静态发布器，以保持框架默认行为
         DomainEventPublisher.setEventPublisher(publisher);
         return publisher;
     }
 
+    /**
+     * 应用事件发布器
+     */
+    @Bean
+    @ConditionalOnMissingBean(IApplicationEventPublisher.class)
+    public IApplicationEventPublisher applicationEventPublisher(ApplicationEventPublisher applicationEventPublisher, @Qualifier("applicationEventExecutor") Executor eventExecutor) {
+        IApplicationEventPublisher publisher = new SpringApplicationEventPublisher(applicationEventPublisher, eventExecutor);
+        // 注册到应用层静态发布器，以保持框架默认行为
+        io.github.anthem37.easy.ddd.application.event.ApplicationEventPublisher.setEventPublisher(publisher);
+        return publisher;
+    }
+
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        DomainEventPublisher.EventPublisher eventPublisher = DomainEventPublisher.getEventPublisher();
+        IDomainEventPublisher eventPublisher = DomainEventPublisher.getEventPublisher();
         if (eventPublisher == null) {
             log.warn("DomainEventPublisher.EventPublisher未设置, 领域事件将不会被发布");
+        }
+        IApplicationEventPublisher applicationEventPublisher = io.github.anthem37.easy.ddd.application.event.ApplicationEventPublisher.getEventPublisher();
+        if (applicationEventPublisher == null) {
+            log.warn("ApplicationEventPublisher.EventPublisher未设置, 应用事件将不会被发布");
         }
     }
 }

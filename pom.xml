@@ -60,7 +60,6 @@
         <central.publishing.plugin.version>0.7.0</central.publishing.plugin.version>
     </properties>
 
-    
 
     <dependencyManagement>
         <dependencies>

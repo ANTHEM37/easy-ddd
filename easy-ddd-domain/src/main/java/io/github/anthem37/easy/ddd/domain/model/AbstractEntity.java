@@ -2,7 +2,6 @@ package io.github.anthem37.easy.ddd.domain.model;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 

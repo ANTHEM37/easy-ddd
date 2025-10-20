@@ -1,9 +1,7 @@
 package io.github.anthem37.easy.ddd.infrastructure.event;
 
-import io.github.anthem37.easy.ddd.common.assertion.Assert;
-import io.github.anthem37.easy.ddd.domain.event.DomainEventPublisher;
 import io.github.anthem37.easy.ddd.domain.event.IDomainEvent;
-import lombok.extern.slf4j.Slf4j;
+import io.github.anthem37.easy.ddd.domain.event.IDomainEventPublisher;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.concurrent.Executor;
@@ -15,49 +13,8 @@ import java.util.concurrent.Executor;
  * @author anthem37
  * @since 2025/8/14 16:15:47
  */
-@Slf4j
-public class SpringDomainEventPublisher implements DomainEventPublisher.EventPublisher {
-
-    private final ApplicationEventPublisher applicationEventPublisher;
-    private final Executor eventExecutor;
-
+public class SpringDomainEventPublisher extends SpringEventPublisher<IDomainEvent<?>> implements IDomainEventPublisher {
     public SpringDomainEventPublisher(ApplicationEventPublisher applicationEventPublisher, Executor eventExecutor) {
-        this.applicationEventPublisher = applicationEventPublisher;
-        this.eventExecutor = eventExecutor;
+        super(applicationEventPublisher, eventExecutor);
     }
-
-    @Override
-    public void publish(IDomainEvent event) {
-        if (event == null) {
-            log.warn("尝试发布空事件");
-            return;
-        }
-        boolean async = event.isAsync();
-        log.debug("通过Spring发布{}领域事件: {}", (async ? "异步" : "同步"), event.getEventType());
-        publishEventInternal(event);
-    }
-
-    /**
-     * 内部方法：发布单个事件
-     *
-     * @param event 要发布的事件
-     */
-    private void publishEventInternal(IDomainEvent event) {
-        boolean async = event.isAsync();
-        try {
-            if (async) {
-                eventExecutor.execute(() -> applicationEventPublisher.publishEvent(event));
-                return;
-            }
-            applicationEventPublisher.publishEvent(event);
-        } catch (Exception e) {
-            String mode = async ? "异步" : "";
-            log.error("{}事件发布失败: {} - {}", mode, event.getEventType(), e.getMessage(), e);
-            // 同步发布失败时抛出异常，异步发布失败时只记录日志
-            if (!async) {
-                Assert.fail("事件发布失败: " + e.getMessage());
-            }
-        }
-    }
-
 }

@@ -1,4 +1,4 @@
-package io.github.anthem37.easy.ddd.domain.event;
+package io.github.anthem37.easy.ddd.common.event;
 
 /**
  * 事件处理器接口
@@ -7,7 +7,7 @@ package io.github.anthem37.easy.ddd.domain.event;
  * @author anthem37
  * @since 2025/8/14 10:12:36
  */
-public interface IEventHandler<T extends IDomainEvent> {
+public interface IEventHandler<T extends IEvent> {
 
     /**
      * 处理事件

@@ -26,6 +26,10 @@
             <artifactId>easy-ddd-domain</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.github.anthem37</groupId>
+            <artifactId>easy-ddd-application</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>

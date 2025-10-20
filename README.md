@@ -357,4 +357,5 @@ easy:
 - 部署命令：
     - 快照或发布版：`mvn -DskipTests deploy`
     - 如需本地签名调试：`mvn -Dgpg.passphrase=$GPG_PASSPHRASE -DskipTests deploy`
-- 说明：根 `pom.xml` 已使用 `central-publishing-maven-plugin`，并启用 `autoPublish` 与 `waitUntil=published`，无需手动关闭/释放 staging。
+- 说明：根 `pom.xml` 已使用 `central-publishing-maven-plugin`，并启用 `autoPublish` 与 `waitUntil=published`，无需手动关闭/释放
+  staging。

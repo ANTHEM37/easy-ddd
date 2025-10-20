@@ -63,19 +63,26 @@ class GetOrderHandler implements IQueryHandler<GetOrderQuery, Order> {
 
 ```java
 class OrderAgg extends AbstractAggregateRoot<String> {
-  void markPlaced() { addDomainEvent(new OrderPlacedEvent(getId())); }
+    void markPlaced() {
+        addDomainEvent(new OrderPlacedEvent(getId()));
+    }
 }
 
-abstract class OrderRepository extends AbstractDomainRepository<OrderAgg, String> { /* 具体持久化 */ }
+abstract class OrderRepository extends AbstractDomainRepository<OrderAgg, String> { /* 具体持久化 */
+}
 ```
 
 4. 编写事件处理器，支持同步/异步与事务阶段：
 
 ```java
+
 @Component
 class OrderPlacedHandler extends AbstractEventHandler<OrderPlacedEvent> {
-  public Class<OrderPlacedEvent> getSupportedEventType() { return OrderPlacedEvent.class; }
-  protected void doHandle(OrderPlacedEvent e) { /* 发消息、回写索引等 */ }
+    public Class<OrderPlacedEvent> getSupportedEventType() {
+        return OrderPlacedEvent.class;
+    }
+
+    protected void doHandle(OrderPlacedEvent e) { /* 发消息、回写索引等 */ }
 }
 ```
 

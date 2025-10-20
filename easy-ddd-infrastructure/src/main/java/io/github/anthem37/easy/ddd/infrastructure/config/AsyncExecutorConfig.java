@@ -42,7 +42,12 @@ public class AsyncExecutorConfig {
     /**
      * 事件线程池配置
      */
-    private ExecutorProperties event = new ExecutorProperties();
+    private ExecutorProperties domainEvent = new ExecutorProperties();
+
+    /**
+     * 事件线程池配置
+     */
+    private ExecutorProperties applicationEvent = new ExecutorProperties();
 
     /**
      * 查询处理专用线程池
@@ -83,35 +88,70 @@ public class AsyncExecutorConfig {
      * 事件处理专用线程池
      * 事件处理通常涉及IO操作（数据库、消息队列、外部服务调用）
      */
-    @Bean("eventExecutor")
-    public Executor eventExecutor() {
+    @Bean("domainEventExecutor")
+    public Executor domainEventExecutor() {
         // 默认配置：IO密集型
-        if (event.getCorePoolSizeMultiplier() <= 0) {
+        if (domainEvent.getCorePoolSizeMultiplier() <= 0) {
             // 默认为CPU核心数
-            event.setCorePoolSizeMultiplier(1.0);
+            domainEvent.setCorePoolSizeMultiplier(1.0);
         }
-        if (event.getMaxPoolSizeMultiplier() <= 0) {
+        if (domainEvent.getMaxPoolSizeMultiplier() <= 0) {
             // 默认为CPU核心数 * 2
-            event.setMaxPoolSizeMultiplier(2.0);
+            domainEvent.setMaxPoolSizeMultiplier(2.0);
         }
-        if (event.getQueueCapacity() <= 0) {
+        if (domainEvent.getQueueCapacity() <= 0) {
             // 默认队列容量
-            event.setQueueCapacity(500);
+            domainEvent.setQueueCapacity(500);
         }
-        if (event.getKeepAliveSeconds() <= 0) {
+        if (domainEvent.getKeepAliveSeconds() <= 0) {
             // 默认空闲时间
-            event.setKeepAliveSeconds(300);
+            domainEvent.setKeepAliveSeconds(300);
         }
-        if (event.getAwaitTerminationSeconds() <= 0) {
+        if (domainEvent.getAwaitTerminationSeconds() <= 0) {
             // 默认等待时间
-            event.setAwaitTerminationSeconds(60);
+            domainEvent.setAwaitTerminationSeconds(60);
         }
-        if (event.getRejectedExecutionPolicy() == null) {
+        if (domainEvent.getRejectedExecutionPolicy() == null) {
             // 默认拒绝策略
-            event.setRejectedExecutionPolicy(ExecutorProperties.RejectedExecutionPolicy.CALLER_RUNS);
+            domainEvent.setRejectedExecutionPolicy(ExecutorProperties.RejectedExecutionPolicy.CALLER_RUNS);
         }
 
-        return createExecutor(event, "Event");
+        return createExecutor(domainEvent, "DomainEvent");
+    }
+
+    /**
+     * 事件处理专用线程池
+     * 事件处理通常涉及IO操作（数据库、消息队列、外部服务调用）
+     */
+    @Bean("applicationEventExecutor")
+    public Executor applicationEventExecutor() {
+        // 默认配置：IO密集型
+        if (applicationEvent.getCorePoolSizeMultiplier() <= 0) {
+            // 默认为CPU核心数
+            applicationEvent.setCorePoolSizeMultiplier(1.0);
+        }
+        if (applicationEvent.getMaxPoolSizeMultiplier() <= 0) {
+            // 默认为CPU核心数 * 2
+            applicationEvent.setMaxPoolSizeMultiplier(2.0);
+        }
+        if (applicationEvent.getQueueCapacity() <= 0) {
+            // 默认队列容量
+            applicationEvent.setQueueCapacity(500);
+        }
+        if (applicationEvent.getKeepAliveSeconds() <= 0) {
+            // 默认空闲时间
+            applicationEvent.setKeepAliveSeconds(300);
+        }
+        if (applicationEvent.getAwaitTerminationSeconds() <= 0) {
+            // 默认等待时间
+            applicationEvent.setAwaitTerminationSeconds(60);
+        }
+        if (applicationEvent.getRejectedExecutionPolicy() == null) {
+            // 默认拒绝策略
+            applicationEvent.setRejectedExecutionPolicy(ExecutorProperties.RejectedExecutionPolicy.CALLER_RUNS);
+        }
+
+        return createExecutor(applicationEvent, "ApplicationEvent");
     }
 
     /**

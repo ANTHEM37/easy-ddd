@@ -1,4 +1,4 @@
-package io.github.anthem37.easy.ddd.domain.event;
+package io.github.anthem37.easy.ddd.common.event;
 
 import lombok.Getter;
 
@@ -8,12 +8,12 @@ import java.util.Map;
  * 包装一个事件并指定触发阶段
  */
 @Getter
-public class TriggeredPhaseEvent implements IDomainEvent {
+public class TriggeredPhaseEvent implements IEvent {
 
-    private final IDomainEvent delegate;
+    private final IEvent delegate;
     private final TriggeredPhase phase;
 
-    public TriggeredPhaseEvent(IDomainEvent delegate, TriggeredPhase phase) {
+    public TriggeredPhaseEvent(IEvent delegate, TriggeredPhase phase) {
         this.delegate = delegate;
         this.phase = phase;
     }
@@ -21,11 +21,6 @@ public class TriggeredPhaseEvent implements IDomainEvent {
     @Override
     public String getEventType() {
         return delegate.getEventType();
-    }
-
-    @Override
-    public Object getAggregateId() {
-        return delegate.getAggregateId();
     }
 
     @Override

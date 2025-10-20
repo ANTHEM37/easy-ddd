@@ -1,8 +1,9 @@
 package io.github.anthem37.easy.ddd.infrastructure.event;
 
 import io.github.anthem37.easy.ddd.common.assertion.Assert;
-import io.github.anthem37.easy.ddd.domain.event.IDomainEvent;
-import io.github.anthem37.easy.ddd.domain.event.IEventHandler;
+import io.github.anthem37.easy.ddd.common.event.IEvent;
+import io.github.anthem37.easy.ddd.common.event.IEventHandler;
+import io.github.anthem37.easy.ddd.common.event.TriggeredPhase;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.transaction.event.TransactionPhase;
@@ -19,7 +20,7 @@ import java.util.function.Consumer;
  * @since 2025/8/14 12:18:53
  */
 @Slf4j
-public abstract class AbstractEventHandler<T extends IDomainEvent> implements IEventHandler<T> {
+public abstract class AbstractEventHandler<T extends IEvent> implements IEventHandler<T> {
 
     /**
      * 处理事件
@@ -27,10 +28,10 @@ public abstract class AbstractEventHandler<T extends IDomainEvent> implements IE
     @EventListener
     @Override
     public void handle(T event) {
-        if (event.getTriggeredPhase() != IDomainEvent.TriggeredPhase.IN_PROCESS) {
+        if (event.getTriggeredPhase() != TriggeredPhase.IN_PROCESS) {
             return;
         }
-        processEvent(event, "处理领域事件", this::doHandle, this::handleError);
+        processEvent(event, "处理事件", this::doHandle, this::handleError);
     }
 
     /**
@@ -38,10 +39,10 @@ public abstract class AbstractEventHandler<T extends IDomainEvent> implements IE
      */
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleAfterCommit(T event) {
-        if (event.getTriggeredPhase() != IDomainEvent.TriggeredPhase.AFTER_COMMIT) {
+        if (event.getTriggeredPhase() != TriggeredPhase.AFTER_COMMIT) {
             return;
         }
-        processEvent(event, "事务提交后处理领域事件", this::doHandleAfterCommit, this::handleAfterCommitError);
+        processEvent(event, "事务提交后处理事件", this::doHandleAfterCommit, this::handleAfterCommitError);
     }
 
     /**
@@ -49,11 +50,10 @@ public abstract class AbstractEventHandler<T extends IDomainEvent> implements IE
      */
     @TransactionalEventListener(phase = TransactionPhase.AFTER_ROLLBACK)
     public void handleAfterRollback(T event) {
-        if (event.getTriggeredPhase() != IDomainEvent.TriggeredPhase.IN_PROCESS
-                && event.getTriggeredPhase() != IDomainEvent.TriggeredPhase.AFTER_ROLLBACK) {
+        if (event.getTriggeredPhase() != TriggeredPhase.IN_PROCESS && event.getTriggeredPhase() != TriggeredPhase.AFTER_ROLLBACK) {
             return;
         }
-        processEvent(event, "事务回滚后处理领域事件", this::doHandleAfterRollback, this::handleAfterRollbackError);
+        processEvent(event, "事务回滚后处理事件", this::doHandleAfterRollback, this::handleAfterRollbackError);
     }
 
     /**
