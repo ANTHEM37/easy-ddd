@@ -50,7 +50,7 @@ public abstract class AbstractEventHandler<T extends IEvent> implements IEventHa
      */
     @TransactionalEventListener(phase = TransactionPhase.AFTER_ROLLBACK)
     public void handleAfterRollback(T event) {
-        if (event.getTriggeredPhase() != TriggeredPhase.IN_PROCESS && event.getTriggeredPhase() != TriggeredPhase.AFTER_ROLLBACK) {
+        if (event.getTriggeredPhase() != TriggeredPhase.AFTER_ROLLBACK) {
             return;
         }
         processEvent(event, "事务回滚后处理事件", this::doHandleAfterRollback, this::handleAfterRollbackError);

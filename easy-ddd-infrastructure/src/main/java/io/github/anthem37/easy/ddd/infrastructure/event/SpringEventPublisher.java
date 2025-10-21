@@ -27,7 +27,7 @@ public class SpringEventPublisher<T extends IEvent> implements IEventPublisher<T
     }
 
     @Override
-    public void publish(IEvent event) {
+    public void publish(T event) {
         if (event == null) {
             log.warn("尝试发布空事件");
             return;

@@ -200,8 +200,8 @@ public class AsyncExecutorConfig {
         ThreadPoolTaskExecutor executor = new MonitorableThreadPoolTaskExecutor();
 
         int cpuCores = Runtime.getRuntime().availableProcessors();
-        int corePoolSize = (int) (cpuCores * props.getCorePoolSizeMultiplier());
-        int maxPoolSize = (int) (cpuCores * props.getMaxPoolSizeMultiplier());
+        int corePoolSize = Math.max(1, (int) (cpuCores * props.getCorePoolSizeMultiplier()));
+        int maxPoolSize = Math.max(corePoolSize, (int) (cpuCores * props.getMaxPoolSizeMultiplier()));
 
         // 设置核心线程数
         executor.setCorePoolSize(corePoolSize);

@@ -7,7 +7,7 @@ import io.github.anthem37.easy.ddd.domain.event.IDomainEvent;
  * 处理领域事件的通用逻辑
  *
  * @author hb28301
- * @date 2025/10/21 10:20:06
+ * @since 2025/10/21 10:20:06
  */
 public abstract class AbstractDomainEventHandler<T extends IDomainEvent<?>> extends AbstractEventHandler<T> {
 }
