@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.io.Serial;
@@ -23,7 +22,6 @@ import java.util.concurrent.ThreadPoolExecutor;
  */
 @Slf4j
 @Configuration
-@EnableAsync
 @ConfigurationProperties(prefix = "easy.ddd.async")
 @Data
 public class AsyncExecutorConfig {
@@ -49,39 +47,47 @@ public class AsyncExecutorConfig {
      */
     private ExecutorProperties applicationEvent = new ExecutorProperties();
 
+    private ExecutorProperties createCpuBoundDefaults() {
+        ExecutorProperties defaults = new ExecutorProperties();
+        defaults.setCorePoolSizeMultiplier(1.0);
+        defaults.setMaxPoolSizeMultiplier(2.0);
+        defaults.setQueueCapacity(Math.max(50, Runtime.getRuntime().availableProcessors() * 10));
+        defaults.setKeepAliveSeconds(30);
+        defaults.setAwaitTerminationSeconds(30);
+        defaults.setRejectedExecutionPolicy(ExecutorProperties.RejectedExecutionPolicy.CALLER_RUNS);
+        return defaults;
+    }
+
+    private ExecutorProperties createBalancedDefaults() {
+        ExecutorProperties defaults = new ExecutorProperties();
+        defaults.setCorePoolSizeMultiplier(1.0);
+        defaults.setMaxPoolSizeMultiplier(1.5);
+        defaults.setQueueCapacity(200);
+        defaults.setKeepAliveSeconds(120);
+        defaults.setAwaitTerminationSeconds(45);
+        defaults.setRejectedExecutionPolicy(ExecutorProperties.RejectedExecutionPolicy.CALLER_RUNS);
+        return defaults;
+    }
+
+    private ExecutorProperties createIoBoundDefaults() {
+        ExecutorProperties defaults = new ExecutorProperties();
+        defaults.setCorePoolSizeMultiplier(1.0);
+        // For I/O-bound tasks, a higher max pool size is beneficial.
+        defaults.setMaxPoolSizeMultiplier(4.0);
+        defaults.setQueueCapacity(500);
+        defaults.setKeepAliveSeconds(300);
+        defaults.setAwaitTerminationSeconds(60);
+        defaults.setRejectedExecutionPolicy(ExecutorProperties.RejectedExecutionPolicy.CALLER_RUNS);
+        return defaults;
+    }
+
     /**
      * 查询处理专用线程池
      * 查询通常是CPU密集型操作，线程数不宜过多
      */
     @Bean("queryExecutor")
     public Executor queryExecutor() {
-        // 默认配置：CPU密集型
-        if (query.getCorePoolSizeMultiplier() <= 0) {
-            // 默认为CPU核心数
-            query.setCorePoolSizeMultiplier(1.0);
-        }
-        if (query.getMaxPoolSizeMultiplier() <= 0) {
-            // 默认为CPU核心数 * 1.5
-            query.setMaxPoolSizeMultiplier(1.5);
-        }
-        if (query.getQueueCapacity() <= 0) {
-            // 默认队列容量
-            query.setQueueCapacity(50);
-        }
-        if (query.getKeepAliveSeconds() <= 0) {
-            // 默认空闲时间
-            query.setKeepAliveSeconds(60);
-        }
-        if (query.getAwaitTerminationSeconds() <= 0) {
-            // 默认等待时间
-            query.setAwaitTerminationSeconds(30);
-        }
-        if (query.getRejectedExecutionPolicy() == null) {
-            // 默认拒绝策略
-            query.setRejectedExecutionPolicy(ExecutorProperties.RejectedExecutionPolicy.CALLER_RUNS);
-        }
-
-        return createExecutor(query, "Query");
+        return createExecutor(query, "Query", createCpuBoundDefaults());
     }
 
     /**
@@ -90,33 +96,7 @@ public class AsyncExecutorConfig {
      */
     @Bean("domainEventExecutor")
     public Executor domainEventExecutor() {
-        // 默认配置：IO密集型
-        if (domainEvent.getCorePoolSizeMultiplier() <= 0) {
-            // 默认为CPU核心数
-            domainEvent.setCorePoolSizeMultiplier(1.0);
-        }
-        if (domainEvent.getMaxPoolSizeMultiplier() <= 0) {
-            // 默认为CPU核心数 * 2
-            domainEvent.setMaxPoolSizeMultiplier(2.0);
-        }
-        if (domainEvent.getQueueCapacity() <= 0) {
-            // 默认队列容量
-            domainEvent.setQueueCapacity(500);
-        }
-        if (domainEvent.getKeepAliveSeconds() <= 0) {
-            // 默认空闲时间
-            domainEvent.setKeepAliveSeconds(300);
-        }
-        if (domainEvent.getAwaitTerminationSeconds() <= 0) {
-            // 默认等待时间
-            domainEvent.setAwaitTerminationSeconds(60);
-        }
-        if (domainEvent.getRejectedExecutionPolicy() == null) {
-            // 默认拒绝策略
-            domainEvent.setRejectedExecutionPolicy(ExecutorProperties.RejectedExecutionPolicy.CALLER_RUNS);
-        }
-
-        return createExecutor(domainEvent, "DomainEvent");
+        return createExecutor(domainEvent, "DomainEvent", createIoBoundDefaults());
     }
 
     /**
@@ -125,33 +105,7 @@ public class AsyncExecutorConfig {
      */
     @Bean("applicationEventExecutor")
     public Executor applicationEventExecutor() {
-        // 默认配置：IO密集型
-        if (applicationEvent.getCorePoolSizeMultiplier() <= 0) {
-            // 默认为CPU核心数
-            applicationEvent.setCorePoolSizeMultiplier(1.0);
-        }
-        if (applicationEvent.getMaxPoolSizeMultiplier() <= 0) {
-            // 默认为CPU核心数 * 2
-            applicationEvent.setMaxPoolSizeMultiplier(2.0);
-        }
-        if (applicationEvent.getQueueCapacity() <= 0) {
-            // 默认队列容量
-            applicationEvent.setQueueCapacity(500);
-        }
-        if (applicationEvent.getKeepAliveSeconds() <= 0) {
-            // 默认空闲时间
-            applicationEvent.setKeepAliveSeconds(300);
-        }
-        if (applicationEvent.getAwaitTerminationSeconds() <= 0) {
-            // 默认等待时间
-            applicationEvent.setAwaitTerminationSeconds(60);
-        }
-        if (applicationEvent.getRejectedExecutionPolicy() == null) {
-            // 默认拒绝策略
-            applicationEvent.setRejectedExecutionPolicy(ExecutorProperties.RejectedExecutionPolicy.CALLER_RUNS);
-        }
-
-        return createExecutor(applicationEvent, "ApplicationEvent");
+        return createExecutor(applicationEvent, "ApplicationEvent", createIoBoundDefaults());
     }
 
     /**
@@ -160,33 +114,7 @@ public class AsyncExecutorConfig {
      */
     @Bean("commandExecutor")
     public Executor commandExecutor() {
-        // 默认配置：平衡型
-        if (command.getCorePoolSizeMultiplier() <= 0) {
-            // 默认为CPU核心数
-            command.setCorePoolSizeMultiplier(1.0);
-        }
-        if (command.getMaxPoolSizeMultiplier() <= 0) {
-            // 默认为CPU核心数 * 1.5
-            command.setMaxPoolSizeMultiplier(1.5);
-        }
-        if (command.getQueueCapacity() <= 0) {
-            // 默认队列容量
-            command.setQueueCapacity(200);
-        }
-        if (command.getKeepAliveSeconds() <= 0) {
-            // 默认空闲时间
-            command.setKeepAliveSeconds(120);
-        }
-        if (command.getAwaitTerminationSeconds() <= 0) {
-            // 默认等待时间
-            command.setAwaitTerminationSeconds(45);
-        }
-        if (command.getRejectedExecutionPolicy() == null) {
-            // 默认拒绝策略
-            command.setRejectedExecutionPolicy(ExecutorProperties.RejectedExecutionPolicy.CALLER_RUNS);
-        }
-
-        return createExecutor(command, "Command");
+        return createExecutor(command, "Command", createBalancedDefaults());
     }
 
     /**
@@ -196,7 +124,8 @@ public class AsyncExecutorConfig {
      * @param namePrefix 线程名前缀
      * @return 线程池执行器
      */
-    private Executor createExecutor(ExecutorProperties props, String namePrefix) {
+    private Executor createExecutor(ExecutorProperties props, String namePrefix, ExecutorProperties defaultProps) {
+        props.mergeWith(defaultProps);
         ThreadPoolTaskExecutor executor = new MonitorableThreadPoolTaskExecutor();
 
         int cpuCores = Runtime.getRuntime().availableProcessors();
@@ -287,6 +216,27 @@ public class AsyncExecutorConfig {
          * 等待时间（秒）
          */
         private int awaitTerminationSeconds;
+
+        public void mergeWith(ExecutorProperties defaults) {
+            if (corePoolSizeMultiplier <= 0 && defaults.getCorePoolSizeMultiplier() > 0) {
+                corePoolSizeMultiplier = defaults.getCorePoolSizeMultiplier();
+            }
+            if (maxPoolSizeMultiplier <= 0 && defaults.getMaxPoolSizeMultiplier() > 0) {
+                maxPoolSizeMultiplier = defaults.getMaxPoolSizeMultiplier();
+            }
+            if (queueCapacity <= 0 && defaults.getQueueCapacity() > 0) {
+                queueCapacity = defaults.getQueueCapacity();
+            }
+            if (keepAliveSeconds <= 0 && defaults.getKeepAliveSeconds() > 0) {
+                keepAliveSeconds = defaults.getKeepAliveSeconds();
+            }
+            if (awaitTerminationSeconds <= 0 && defaults.getAwaitTerminationSeconds() > 0) {
+                awaitTerminationSeconds = defaults.getAwaitTerminationSeconds();
+            }
+            if (rejectedExecutionPolicy == null && defaults.getRejectedExecutionPolicy() != null) {
+                rejectedExecutionPolicy = defaults.getRejectedExecutionPolicy();
+            }
+        }
 
         /**
          * 拒绝策略枚举
