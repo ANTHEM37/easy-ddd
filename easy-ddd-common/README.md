@@ -1,84 +1,89 @@
-# easy-ddd-common
+# easy-ddd-common 模块
 
-聚合通用契约与工具：CQRS 接口与处理器、断言工具 `Assert`、以及可组合的业务流程编排 `BizFlow`。
+## 模块概述
+`easy-ddd-common` 提供了领域驱动设计（DDD）中常用的基础设施：
 
-## CQRS 契约
+- **断言工具** (`assertion`): 简化业务断言，统一抛出业务异常。
+- **CQRS 接口** (`cqrs`): 定义命令（Command）和查询（Query）的总线与处理器契约。
+- **事件发布** (`event`): 定义领域事件、事件处理与发布流程。
+- **BizFlow 流程引擎** (`flow`): 提供可编排的业务流程链路。
+- **异常定义** (`exception`): 标准化业务异常类型。
 
-- `ICommand` / `IQuery`：命令与查询标记接口，含默认校验方法。
-- `ICommandHandler` / `IQueryHandler`：处理器接口，定义 `handle` 与支持类型。
+## 包结构
 
-## 断言工具
-
-- `Assert`：提供 `isTrue`、`isNull`、`hasText`、`matches`、`equals` 等业务异常断言。
-
-## BizFlow 编排
-
-- 支持命令/查询节点、条件分支、上下文共享；可导出 PlantUML 图。
-
-### 流程图与示例
+![模块包结构](../common-docs/images/common-structure.png)
 
 ```mermaid
-flowchart TD
-    Start --> Cmd[PlaceOrderCommand]
-    Cmd --> Qry[GetOrderDetailQuery]
-    Qry --> Cond{StockEnough?}
-    Cond -- Yes --> Ship[CreateShipmentCommand]
-    Cond -- No --> Fail[CancelOrderCommand]
+%% 图：模块包结构
 
-
+flowchart LR
+  subgraph common
+    A[assertion] --> B[exception]
+    C[cqrs] --> D[flow]
+    D --> E[event]
+  end
 ```
+
+## 主要组件详解
+
+### 1. 断言工具（assertion）
+- 类 `Assert` 提供 `notNull`、`isTrue` 等静态方法。
+- 断言失败时抛出 `BusinessException`。
 
 ```java
-BizFlow flow = BizFlow.create("orderFlow")
-        .command(new PlaceOrderCommand(...))
-        .
-
-query(new GetOrderDetailQuery(...))
-        .
-
-condition(ctx ->ctx.
-
-get("stockEnough",Boolean .class))
-        .
-
-onTrue(() ->new
-
-CreateShipmentCommand(...))
-        .
-
-onFalse(() ->new
-
-CancelOrderCommand(...));
-
-String plantUml = flow.toPlantUML();
+Assert.notNull(entity, "实体不能为空");
 ```
 
-## 优劣势
+### 2. CQRS 接口（cqrs）
+- `ICommand`, `IQuery`: 标记接口。
+- `ICommandBus`, `IQueryBus`: 定义 `dispatch` 方法。
+- `ICommandHandler<T extends ICommand>`, `IQueryHandler<R, Q extends IQuery>`: 处理契约。
 
-- 优势：通用契约统一上下文；编排可视化；与总线自然衔接。
-- 劣势：需要合理拆分节点与定义上下文，避免复杂度上升。
+```java
+// 命令定义
+public class CreateUserCommand implements ICommand { ... }
+// 命令处理
+public class CreateUserHandler implements ICommandHandler<CreateUserCommand> { ... }
+```
 
-关联模块：
+### 3. 事件发布（event）
+- `IEvent`: 领域事件基接口。
+- `IEventHandler<E extends IEvent>`: 事件处理器。
+- `IEventPublisher`: 发布接口。
+- 支持 `TriggeredPhase` 自定义触发时机。
 
-- [easy-ddd-application](../easy-ddd-application/README.md)
-- [easy-ddd-infrastructure](../easy-ddd-infrastructure/README.md)
-- [easy-ddd-domain](../easy-ddd-domain/README.md)
+### 4. BizFlow 流程引擎（flow）
+- 类 `BizFlow` 支持按步骤执行、异常回滚。
 
-## BizFlow 高级用法
+```java
+BizFlow.of()
+    .next(ctx -> validate(ctx))
+    .next(ctx -> process(ctx))
+    .execute();
+```
 
-- 上下文读写：节点可读写共享上下文（如 `ctx.put("orderId", id)`），下游节点通过 `ctx.get("orderId", String.class)` 读取。
-- 条件编排：`condition` + `onTrue/onFalse` 组合，支持嵌套与多分支；建议保持每个分支只做一件事。
-- 混合节点：支持通用函数节点（如 `flow.exec(ctx -> {...})`）以处理特殊逻辑。
-- 与总线集成：命令/查询节点内部调用 `ICommandBus`/`IQueryBus`；统一异常由 `Assert` 抛出业务异常。
+### 5. 异常类型（exception）
+- `BusinessException`: 通用业务异常。
+- `BizFlowException`: 流程执行异常。
 
-### 调试与导出
+## 使用示例
 
-- 导出 PlantUML：`flow.toPlantUML()`，可在 CI 中产出图文件供评审。
-- 日志与追踪：为每个节点命名（`BizFlow.create("orderFlow")`）并在日志中打印节点进入/退出；可结合 MDC 注入 `traceId`。
-- 断言：在每个关键节点使用 `Assert.hasText/equals` 等保障前置条件与上下文一致性。
+```java
+// 断言示例
+Assert.isTrue(age > 0, "年龄必须大于0");
 
-### 最佳实践
+// 命令总线
+commandBus.dispatch(new CreateUserCommand(name, age));
 
-- 粒度控制：节点职责单一；长逻辑拆分多个节点；避免在节点内部做跨聚合复杂协调。
-- 幂等：命令节点需幂等；查询节点应无副作用。
-- 可测试：为每个节点提供单元测试；上下文构造使用测试工厂方法以复用。
+// 事件发布
+eventPublisher.publish(new UserCreatedEvent(userId));
+
+// 流程编排
+BizFlow.of()
+    .next(ctx -> step1(ctx))
+    .next(ctx -> step2(ctx))
+    .execute();
+```
+
+---
+*以上内容由 easy-ddd 团队维护，持续完善中。*
